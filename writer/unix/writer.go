@@ -9,14 +9,14 @@ import (
 	"github.com/gratonos/gxlog/iface"
 )
 
-const permission = 0770
+const dirPerm = 0770
 
 type Writer struct {
 	socket *socket
 }
 
 func Open(path string) (*Writer, error) {
-	if err := os.MkdirAll(filepath.Dir(path), permission); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return nil, openError(err)
 	}
 	if err := checkAndRemove(path); err != nil {
@@ -24,10 +24,6 @@ func Open(path string) (*Writer, error) {
 	}
 	socket, err := OpenSocket(path)
 	if err != nil {
-		return nil, openError(err)
-	}
-	if err := os.Chmod(path, permission); err != nil {
-		socket.Close()
 		return nil, openError(err)
 	}
 	return &Writer{socket: socket}, nil
