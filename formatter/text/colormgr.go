@@ -19,17 +19,6 @@ const (
 	White
 )
 
-const (
-	BrightBlack Color = iota + 90
-	BrightRed
-	BrightGreen
-	BrightYellow
-	BrightBlue
-	BrightMagenta
-	BrightCyan
-	BrightWhite
-)
-
 const escSeqFmt = "\033[%dm"
 
 type colorMgr struct {
