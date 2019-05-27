@@ -36,6 +36,7 @@ func (log *Logger) Mark(ok bool) *Logger {
 
 func appendContexts(staticContexts []iface.Context, dynamicContexts []dynamicContext,
 	kvs []interface{}) ([]iface.Context, []dynamicContext) {
+
 	for len(kvs) >= 2 {
 		dynamic, ok := kvs[1].(Dynamic)
 		if ok {

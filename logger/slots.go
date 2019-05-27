@@ -39,6 +39,7 @@ var nullSlotLink = slotLink{
 
 func (log *Logger) Link(slot Slot, formatter iface.Formatter, writer iface.Writer,
 	level iface.Level, filter Filter, handler ErrorHandler) {
+
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
