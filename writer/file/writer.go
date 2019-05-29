@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	checkInterval = time.Second * 2
+	checkInterval = time.Second * 5
 	dateFormat    = "%04d%02d%02d"
 	timeFormat    = "%02d%02d%02d.%06d"
 	extension     = ".log"
