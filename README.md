@@ -1,6 +1,6 @@
 # gxlog #
 
-This gxlog is a simplified version of [gxlog](https://github.com/gxlog/gxlog).
+This gxlog is a simplified version of [gxlog/gxlog](https://github.com/gxlog/gxlog).
 
 ```
 +----------------------------------------------------------------+
