@@ -23,7 +23,7 @@ func testSlots() {
 	log.CopySlot(logger.Slot1, logger.Slot0)
 	log.Info("this will be printed twice")
 
-	log.SetSlotFormatter(logger.Slot1, json.New(0, 0, 0))
+	log.SetSlotFormatter(logger.Slot1, json.New(json.Config{}))
 	log.Info("this will be printed in text format and json format")
 
 	log.SwapSlot(logger.Slot0, logger.Slot1)

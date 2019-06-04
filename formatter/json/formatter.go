@@ -19,11 +19,11 @@ type Formatter struct {
 	lock sync.Mutex
 }
 
-func New(fileSegs, pkgSegs, funcSegs int) *Formatter {
+func New(config Config) *Formatter {
 	formatter := &Formatter{
-		fileSegs: fileSegs,
-		pkgSegs:  pkgSegs,
-		funcSegs: funcSegs,
+		fileSegs: config.FileSegs,
+		pkgSegs:  config.PkgSegs,
+		funcSegs: config.FuncSegs,
 	}
 	return formatter
 }

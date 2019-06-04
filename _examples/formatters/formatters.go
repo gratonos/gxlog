@@ -53,7 +53,7 @@ func testTextFormatter() {
 }
 
 func testJSONFormatter() {
-	jsonFmt := json.New(1, 0, 0)
+	jsonFmt := json.New(json.Config{FileSegs: 1})
 	log.SetSlotFormatter(logger.Slot0, jsonFmt)
 	log.Trace("json")
 
