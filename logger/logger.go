@@ -150,6 +150,8 @@ func (log *Logger) Panicf(fmtstr string, args ...interface{}) {
 }
 
 func (log *Logger) Log(callDepth int, level iface.Level, args ...interface{}) {
+	checkLevel(level)
+
 	log.lock.Lock()
 	logLevel := log.level
 	log.lock.Unlock()
@@ -160,6 +162,8 @@ func (log *Logger) Log(callDepth int, level iface.Level, args ...interface{}) {
 }
 
 func (log *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ...interface{}) {
+	checkLevel(level)
+
 	log.lock.Lock()
 	logLevel := log.level
 	log.lock.Unlock()
@@ -281,4 +285,10 @@ func splitPkgAndFunc(name string) (string, string) {
 	}
 	nextDot += (lastSlash + 1)
 	return name[:nextDot], name[nextDot+1:]
+}
+
+func checkLevel(level iface.Level) {
+	if level < iface.Trace || level > iface.Fatal {
+		panic(fmt.Sprintf("gxlog: invalid log level: %d", level))
+	}
 }
