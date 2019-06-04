@@ -16,7 +16,7 @@ var (
 
 func init() {
 	defaultLogger = logger.New(logger.Config{})
-	defaultFormatter = text.New(text.CompactHeader, true, nil)
+	defaultFormatter = text.New(text.Config{Coloring: true})
 
 	defaultLogger.SetSlot(logger.Slot0, logger.Slot{
 		Formatter: defaultFormatter,

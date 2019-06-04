@@ -6,46 +6,23 @@ import (
 	"github.com/gratonos/gxlog/iface"
 )
 
-type Color int
-
-const (
-	Black Color = iota + 30
-	Red
-	Green
-	Yellow
-	Blue
-	Magenta
-	Cyan
-	White
-)
-
 const escSeqFmt = "\033[%dm"
 
 type colorMgr struct {
-	colors    []Color
+	colors    [iface.LevelCount]Color
 	markColor Color
 
-	colorSeqs    [][]byte
+	colorSeqs    [iface.LevelCount][]byte
 	markColorSeq []byte
 	resetSeq     []byte
 }
 
-func newColorMgr() *colorMgr {
-	colors := []Color{
-		iface.Trace: Green,
-		iface.Debug: Green,
-		iface.Info:  Green,
-		iface.Warn:  Yellow,
-		iface.Error: Red,
-		iface.Fatal: Red,
-	}
+func newColorMgr(colorMap map[iface.Level]Color, markColor Color) *colorMgr {
 	mgr := &colorMgr{
-		colors:       colors,
-		markColor:    Magenta,
-		colorSeqs:    initColorSeqs(colors),
-		markColorSeq: makeSeq(Magenta),
-		resetSeq:     makeSeq(0),
+		resetSeq: makeColorSeq(0),
 	}
+	mgr.MapColors(colorMap)
+	mgr.SetMarkColor(markColor)
 	return mgr
 }
 
@@ -55,7 +32,7 @@ func (mgr *colorMgr) Color(level iface.Level) Color {
 
 func (mgr *colorMgr) SetColor(level iface.Level, color Color) {
 	mgr.colors[level] = color
-	mgr.colorSeqs[level] = makeSeq(color)
+	mgr.colorSeqs[level] = makeColorSeq(color)
 }
 
 func (mgr *colorMgr) MapColors(colorMap map[iface.Level]Color) {
@@ -70,7 +47,7 @@ func (mgr *colorMgr) MarkColor() Color {
 
 func (mgr *colorMgr) SetMarkColor(color Color) {
 	mgr.markColor = color
-	mgr.markColorSeq = makeSeq(color)
+	mgr.markColorSeq = makeColorSeq(color)
 }
 
 func (mgr *colorMgr) ColorEars(level iface.Level) ([]byte, []byte) {
@@ -81,14 +58,6 @@ func (mgr *colorMgr) MarkColorEars() ([]byte, []byte) {
 	return mgr.markColorSeq, mgr.resetSeq
 }
 
-func initColorSeqs(colors []Color) [][]byte {
-	colorSeqs := make([][]byte, len(colors))
-	for i := range colors {
-		colorSeqs[i] = makeSeq(colors[i])
-	}
-	return colorSeqs
-}
-
-func makeSeq(color Color) []byte {
+func makeColorSeq(color Color) []byte {
 	return []byte(fmt.Sprintf(escSeqFmt, color))
 }
