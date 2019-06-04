@@ -39,7 +39,7 @@ func init() {
 }
 
 func TestFullHeader(t *testing.T) {
-	formatter := text.New(text.FullHeader, false, nil)
+	formatter := text.New(text.Config{Header: text.FullHeader})
 	expect := fmt.Sprintf("%s %s.%s %s %s:%d %s.%s %s[%s] %s\n",
 		tmplDate, tmplTime, tmplDecimal[:6], "INFO ", tmplFile, tmplLine,
 		tmplPkg, tmplFunc, tmplPrefix, tmplContextPair, tmplMsg)
@@ -47,7 +47,7 @@ func TestFullHeader(t *testing.T) {
 }
 
 func TestCompactHeader(t *testing.T) {
-	formatter := text.New(text.CompactHeader, false, nil)
+	formatter := text.New(text.Config{Header: text.CompactHeader})
 	expect := fmt.Sprintf("%s.%s %s %s:%d %s.%s %s[%s] %s\n",
 		tmplTime, tmplDecimal[:6], "INFO ", filepath.Base(tmplFile), tmplLine,
 		tmplPkg, tmplFunc, tmplPrefix, tmplContextPair, tmplMsg)
@@ -55,7 +55,7 @@ func TestCompactHeader(t *testing.T) {
 }
 
 func TestSyslogHeader(t *testing.T) {
-	formatter := text.New(text.SyslogHeader, false, nil)
+	formatter := text.New(text.Config{Header: text.SyslogHeader})
 	expect := fmt.Sprintf("%s:%d %s.%s %s[%s] %s\n",
 		filepath.Base(tmplFile), tmplLine, tmplPkg, tmplFunc, tmplPrefix,
 		tmplContextPair, tmplMsg)
@@ -65,7 +65,7 @@ func TestSyslogHeader(t *testing.T) {
 func TestCustomHeader(t *testing.T) {
 	header := "{{time:time.ns}} {{level:char}} {{file}}:{{line%05d}} " +
 		"{{pkg:1}}.{{func}} {{prefix}}[{{context:list}}] {{msg%20s}}\n"
-	formatter := text.New(header, false, nil)
+	formatter := text.New(text.Config{Header: header})
 	expect := fmt.Sprintf("%s.%s %s %s:%05d %s.%s %s[%s] %20s\n",
 		tmplTime, tmplDecimal, "I", tmplFile, tmplLine, path.Base(tmplPkg),
 		tmplFunc, tmplPrefix, tmplContextList, tmplMsg)
@@ -75,13 +75,13 @@ func TestCustomHeader(t *testing.T) {
 func TestBizarreHeader(t *testing.T) {
 	header := "xx{{unknown}} {static} {{unknown}} {{level : char}} {{pkg|1}} " +
 		"[{{context:dot}}] {{ msg %20s }}yy"
-	formatter := text.New(header, false, nil)
+	formatter := text.New(text.Config{Header: header})
 	expect := fmt.Sprintf("xx {static}  %s  [%s] %20syy", "I", tmplContextPair, tmplMsg)
 	testFormat(t, formatter, tmplRecord(), expect)
 }
 
 func TestColor(t *testing.T) {
-	formatter := text.New("{{msg}}", true, nil)
+	formatter := text.New(text.Config{Header: "{{msg}}", Coloring: true})
 	expect := fmt.Sprintf("\033[%dm%s\033[0m", text.Magenta, tmplMsg)
 	testFormat(t, formatter, tmplRecord(), expect)
 
