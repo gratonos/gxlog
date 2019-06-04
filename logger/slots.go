@@ -3,9 +3,7 @@ package logger
 import (
 	"reflect"
 
-	"github.com/gratonos/gxlog/formatter"
 	"github.com/gratonos/gxlog/iface"
-	"github.com/gratonos/gxlog/writer"
 )
 
 type Slot int
@@ -32,9 +30,7 @@ type slotLink struct {
 }
 
 var nullSlotLink = slotLink{
-	Formatter: formatter.Null(),
-	Writer:    writer.Null(),
-	Level:     iface.Off,
+	Level: iface.Off,
 }
 
 func (log *Logger) Link(slot Slot, formatter iface.Formatter, writer iface.Writer,
@@ -170,11 +166,13 @@ func (log *Logger) SetSlotErrorHandler(slot Slot, handler ErrorHandler) {
 func (log *Logger) updateEquivalents() {
 	for i := 0; i < MaxSlot; i++ {
 		log.equivalents[i] = log.equivalents[i][:0]
-		if !reflect.TypeOf(log.slots[i].Formatter).Comparable() {
+		if log.slots[i].Formatter == nil ||
+			!reflect.TypeOf(log.slots[i].Formatter).Comparable() {
 			continue
 		}
 		for j := i + 1; j < MaxSlot; j++ {
-			if !reflect.TypeOf(log.slots[j].Formatter).Comparable() ||
+			if log.slots[j].Formatter == nil ||
+				!reflect.TypeOf(log.slots[j].Formatter).Comparable() ||
 				log.slots[i].Formatter != log.slots[j].Formatter {
 				continue
 			}

@@ -227,15 +227,17 @@ func (log *Logger) write(callDepth int, level iface.Level, msg string) {
 				continue
 			}
 			format := formats[slot]
-			if format == nil {
+			if format == nil && link.Formatter != nil {
 				format = link.Formatter.Format(record)
 				for _, id := range log.equivalents[slot] {
 					formats[id] = format
 				}
 			}
-			err := link.Writer.Write(format, record)
-			if err != nil && link.ErrorHandler != nil {
-				link.ErrorHandler(format, record, err)
+			if link.Writer != nil {
+				err := link.Writer.Write(format, record)
+				if err != nil && link.ErrorHandler != nil {
+					link.ErrorHandler(format, record, err)
+				}
 			}
 		}
 	}

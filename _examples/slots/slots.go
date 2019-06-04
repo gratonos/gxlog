@@ -8,7 +8,6 @@ import (
 	"github.com/gratonos/gxlog/formatter/json"
 	"github.com/gratonos/gxlog/iface"
 	"github.com/gratonos/gxlog/logger"
-	"github.com/gratonos/gxlog/writer"
 )
 
 var log = gxlog.Logger()
@@ -48,7 +47,7 @@ func testSlotsLevel() {
 	filter := func(record *iface.Record) bool {
 		return record.Aux.Mark
 	}
-	log.Link(logger.Slot0, hook, writer.Null(), iface.Warn, filter, logger.Report)
+	log.Link(logger.Slot0, hook, nil, iface.Warn, filter, logger.Report)
 	log.Mark(true).Info("marked, but info")
 	log.Error("error, but not marked")
 	log.Mark(true).Warn("warn and marked")
