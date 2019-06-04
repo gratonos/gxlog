@@ -34,19 +34,16 @@ type Writer struct {
 	lock      sync.Mutex
 }
 
-func Open(path string, maxFileSize int64) (*Writer, error) {
-	if path == "" {
-		return nil, errors.New("writer/file.Open: path must not be empty")
-	}
-	if maxFileSize <= 0 {
-		return nil, errors.New("writer/file.Open: maxFileSize must be positive")
-	}
-	if err := checkPath(path); err != nil {
+func Open(config Config) (*Writer, error) {
+	config.SetDefaults()
+
+	if err := checkPath(config.Path); err != nil {
 		return nil, fmt.Errorf("writer/file.Open: %v", err)
 	}
+
 	return &Writer{
-		path:        path,
-		maxFileSize: maxFileSize,
+		path:        config.Path,
+		maxFileSize: config.MaxFileSize,
 	}, nil
 }
 

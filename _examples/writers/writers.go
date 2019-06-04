@@ -59,7 +59,7 @@ func testUnixWriter() {
 
 func testFileWriter() {
 	// Shell expansion is NOT supported. Thus, ~, $var and so on will NOT be expanded.
-	wt, err := file.Open("/tmp/gxlog", 20*1024*1024)
+	wt, err := file.Open(file.Config{Path: "/tmp/gxlog"})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
