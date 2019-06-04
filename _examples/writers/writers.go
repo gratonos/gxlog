@@ -73,7 +73,7 @@ func testFileWriter() {
 func testSyslogWriter() {
 	gxlog.Formatter().SetHeader(text.SyslogHeader)
 
-	wt, err := syslog.Open("gxlog", syslog.FacUser, nil)
+	wt, err := syslog.Open(syslog.Config{Tag: "gxlog", Facility: syslog.FacUser})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)

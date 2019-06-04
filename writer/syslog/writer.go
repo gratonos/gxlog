@@ -8,65 +8,29 @@ import (
 	"github.com/gratonos/gxlog/iface"
 )
 
-type Facility int
-
-const (
-	FacKern Facility = iota << 3
-	FacUser
-	FacMail
-	FacDaemon
-	FacAuth
-	FacSyslog
-	FacLPR
-	FacNews
-	FacUUCP
-	FacCron
-	FacAuthPriv
-	FacFTP
-)
-
-type Severity int
-
-const (
-	SevEmerg Severity = iota
-	SevAlert
-	SevCrit
-	SevErr
-	SevWarning
-	SevNotice
-	SevInfo
-	SevDebug
-)
-
 type Writer struct {
 	tag      string
 	facility Facility
 
-	severities []Severity
+	severities [iface.LevelCount]Severity
 	log        *syslog
 	lock       sync.Mutex
 }
 
-func Open(tag string, facility Facility, severityMap map[iface.Level]Severity) (*Writer, error) {
+func Open(config Config) (*Writer, error) {
+	config.SetDefaults()
+
 	log, err := syslogDial()
 	if err != nil {
 		return nil, fmt.Errorf("writer/syslog.Open: %v", err)
 	}
-	severities := []Severity{
-		iface.Trace: SevDebug,
-		iface.Debug: SevDebug,
-		iface.Info:  SevInfo,
-		iface.Warn:  SevWarning,
-		iface.Error: SevErr,
-		iface.Fatal: SevCrit,
-	}
+
 	writer := &Writer{
-		tag:        tag,
-		facility:   facility,
-		severities: severities,
-		log:        log,
+		tag:      config.Tag,
+		facility: config.Facility,
+		log:      log,
 	}
-	writer.MapSeverities(severityMap)
+	writer.MapSeverities(config.SeverityMap)
 	return writer, nil
 }
 
