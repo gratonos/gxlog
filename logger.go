@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/gratonos/gxlog/formatter/text"
-	"github.com/gratonos/gxlog/iface"
 	"github.com/gratonos/gxlog/logger"
 	"github.com/gratonos/gxlog/writer"
 )
@@ -16,7 +15,7 @@ var (
 )
 
 func init() {
-	defaultLogger = logger.New(iface.Trace, nil)
+	defaultLogger = logger.New(logger.Config{})
 	defaultFormatter = text.New(text.CompactHeader, true, nil)
 
 	defaultLogger.SetSlot(logger.Slot0, logger.Slot{

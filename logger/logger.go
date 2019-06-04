@@ -16,9 +16,6 @@ import (
 
 const callDepthOffset = 3
 
-// Do NOT call any method of the Logger within a Filter, or it may deadlock.
-type Filter func(record *iface.Record) bool
-
 // A Logger is a logging framework that contains EIGHT slots. Each Slot contains
 // a Formatter and a Writer. A Logger has its own level and filter while each
 // Slot has its independent level and filter. Logger calls the Formatter and
@@ -37,10 +34,10 @@ type Logger struct {
 	lock        *sync.Mutex
 }
 
-func New(level iface.Level, filter Filter) *Logger {
+func New(config Config) *Logger {
 	return &Logger{
-		level:       level,
-		filter:      filter,
+		level:       config.Level,
+		filter:      config.Filter,
 		slots:       initSlots(),
 		equivalents: make([][]int, MaxSlot),
 		lock:        new(sync.Mutex),
