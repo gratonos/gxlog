@@ -18,8 +18,11 @@ var (
 func init() {
 	defaultLogger = logger.New(iface.Trace, nil)
 	defaultFormatter = text.New(text.CompactHeader, true, nil)
-	defaultLogger.Link(logger.Slot0, defaultFormatter, writer.Wrap(os.Stderr),
-		iface.Trace, nil, nil)
+
+	defaultLogger.SetSlot(logger.Slot0, logger.Slot{
+		Formatter: defaultFormatter,
+		Writer:    writer.Wrap(os.Stderr),
+	})
 }
 
 func Logger() *logger.Logger {

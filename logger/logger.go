@@ -32,7 +32,7 @@ type Logger struct {
 	dynamicContexts []dynamicContext
 	mark            bool
 
-	slots       []slotLink
+	slots       []Slot
 	equivalents [][]int // indexes of equivalent formatters
 	lock        *sync.Mutex
 }
@@ -218,25 +218,25 @@ func (log *Logger) write(callDepth int, level iface.Level, msg string) {
 
 	if log.filter == nil || log.filter(record) {
 		var formats [MaxSlot][]byte
-		for slot := 0; slot < MaxSlot; slot++ {
-			link := &log.slots[slot]
-			if link.Level > level {
+		for i := 0; i < MaxSlot; i++ {
+			slot := &log.slots[i]
+			if slot.Level > level {
 				continue
 			}
-			if link.Filter != nil && !link.Filter(record) {
+			if slot.Filter != nil && !slot.Filter(record) {
 				continue
 			}
-			format := formats[slot]
-			if format == nil && link.Formatter != nil {
-				format = link.Formatter.Format(record)
-				for _, id := range log.equivalents[slot] {
+			format := formats[i]
+			if format == nil && slot.Formatter != nil {
+				format = slot.Formatter.Format(record)
+				for _, id := range log.equivalents[i] {
 					formats[id] = format
 				}
 			}
-			if link.Writer != nil {
-				err := link.Writer.Write(format, record)
-				if err != nil && link.ErrorHandler != nil {
-					link.ErrorHandler(format, record, err)
+			if slot.Writer != nil {
+				err := slot.Writer.Write(format, record)
+				if err != nil && slot.ErrorHandler != nil {
+					slot.ErrorHandler(format, record, err)
 				}
 			}
 		}

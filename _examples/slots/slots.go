@@ -47,7 +47,14 @@ func testSlotsLevel() {
 	filter := func(record *iface.Record) bool {
 		return record.Aux.Mark
 	}
-	log.Link(logger.Slot0, hook, nil, iface.Warn, filter, logger.Report)
+	slot := logger.Slot{
+		Formatter:    hook,
+		Level:        iface.Warn,
+		Filter:       filter,
+		ErrorHandler: logger.Report,
+	}
+	log.SetSlot(logger.Slot0, slot)
+
 	log.Mark(true).Info("marked, but info")
 	log.Error("error, but not marked")
 	log.Mark(true).Warn("warn and marked")

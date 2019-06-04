@@ -6,10 +6,10 @@ import (
 	"github.com/gratonos/gxlog/iface"
 )
 
-type Slot int
+type SlotIndex int
 
 const (
-	Slot0 Slot = iota
+	Slot0 SlotIndex = iota
 	Slot1
 	Slot2
 	Slot3
@@ -21,7 +21,7 @@ const (
 
 const MaxSlot = 8
 
-type slotLink struct {
+type Slot struct {
 	Formatter    iface.Formatter
 	Writer       iface.Writer
 	Level        iface.Level
@@ -29,45 +29,52 @@ type slotLink struct {
 	ErrorHandler ErrorHandler
 }
 
-var nullSlotLink = slotLink{
+var nullSlot = Slot{
 	Level: iface.Off,
 }
 
-func (log *Logger) Link(slot Slot, formatter iface.Formatter, writer iface.Writer,
-	level iface.Level, filter Filter, handler ErrorHandler) {
-
+func (log *Logger) Slot(index SlotIndex) Slot {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.slots[slot] = slotLink{
-		Formatter:    formatter,
-		Writer:       writer,
-		Level:        level,
-		Filter:       filter,
-		ErrorHandler: handler,
-	}
-	log.updateEquivalents()
+	return log.slots[index]
 }
 
-func (log *Logger) Unlink(slot Slot) {
+func (log *Logger) SetSlot(index SlotIndex, slot Slot) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.slots[slot] = nullSlotLink
+	log.slots[index] = slot
 	log.updateEquivalents()
 }
 
-func (log *Logger) UnlinkAll() {
+func (log *Logger) UpdateSlot(index SlotIndex, fn func(Slot) Slot) {
+	log.lock.Lock()
+	defer log.lock.Unlock()
+
+	log.slots[index] = fn(log.slots[index])
+	log.updateEquivalents()
+}
+
+func (log *Logger) ResetSlot(index SlotIndex) {
+	log.lock.Lock()
+	defer log.lock.Unlock()
+
+	log.slots[index] = nullSlot
+	log.updateEquivalents()
+}
+
+func (log *Logger) ResetAllSlots() {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
 	for i := range log.slots {
-		log.slots[i] = nullSlotLink
+		log.slots[i] = nullSlot
 	}
 	log.updateEquivalents()
 }
 
-func (log *Logger) CopySlot(dst, src Slot) {
+func (log *Logger) CopySlot(dst, src SlotIndex) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
@@ -75,16 +82,16 @@ func (log *Logger) CopySlot(dst, src Slot) {
 	log.updateEquivalents()
 }
 
-func (log *Logger) MoveSlot(to, from Slot) {
+func (log *Logger) MoveSlot(to, from SlotIndex) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
 	log.slots[to] = log.slots[from]
-	log.slots[from] = nullSlotLink
+	log.slots[from] = nullSlot
 	log.updateEquivalents()
 }
 
-func (log *Logger) SwapSlot(left, right Slot) {
+func (log *Logger) SwapSlot(left, right SlotIndex) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
@@ -92,75 +99,75 @@ func (log *Logger) SwapSlot(left, right Slot) {
 	log.updateEquivalents()
 }
 
-func (log *Logger) SlotFormatter(slot Slot) iface.Formatter {
+func (log *Logger) SlotFormatter(index SlotIndex) iface.Formatter {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	return log.slots[slot].Formatter
+	return log.slots[index].Formatter
 }
 
-func (log *Logger) SetSlotFormatter(slot Slot, formatter iface.Formatter) {
+func (log *Logger) SetSlotFormatter(index SlotIndex, formatter iface.Formatter) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.slots[slot].Formatter = formatter
+	log.slots[index].Formatter = formatter
 	log.updateEquivalents()
 }
 
-func (log *Logger) SlotWriter(slot Slot) iface.Writer {
+func (log *Logger) SlotWriter(index SlotIndex) iface.Writer {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	return log.slots[slot].Writer
+	return log.slots[index].Writer
 }
 
-func (log *Logger) SetSlotWriter(slot Slot, writer iface.Writer) {
+func (log *Logger) SetSlotWriter(index SlotIndex, writer iface.Writer) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.slots[slot].Writer = writer
+	log.slots[index].Writer = writer
 }
 
-func (log *Logger) SlotLevel(slot Slot) iface.Level {
+func (log *Logger) SlotLevel(index SlotIndex) iface.Level {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	return log.slots[slot].Level
+	return log.slots[index].Level
 }
 
-func (log *Logger) SetSlotLevel(slot Slot, level iface.Level) {
+func (log *Logger) SetSlotLevel(index SlotIndex, level iface.Level) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.slots[slot].Level = level
+	log.slots[index].Level = level
 }
 
-func (log *Logger) SlotFilter(slot Slot) Filter {
+func (log *Logger) SlotFilter(index SlotIndex) Filter {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	return log.slots[slot].Filter
+	return log.slots[index].Filter
 }
 
-func (log *Logger) SetSlotFilter(slot Slot, filter Filter) {
+func (log *Logger) SetSlotFilter(index SlotIndex, filter Filter) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.slots[slot].Filter = filter
+	log.slots[index].Filter = filter
 }
 
-func (log *Logger) SlotErrorHandler(slot Slot) ErrorHandler {
+func (log *Logger) SlotErrorHandler(index SlotIndex) ErrorHandler {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	return log.slots[slot].ErrorHandler
+	return log.slots[index].ErrorHandler
 }
 
-func (log *Logger) SetSlotErrorHandler(slot Slot, handler ErrorHandler) {
+func (log *Logger) SetSlotErrorHandler(index SlotIndex, handler ErrorHandler) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.slots[slot].ErrorHandler = handler
+	log.slots[index].ErrorHandler = handler
 }
 
 func (log *Logger) updateEquivalents() {
@@ -181,10 +188,10 @@ func (log *Logger) updateEquivalents() {
 	}
 }
 
-func initSlots() []slotLink {
-	var slots []slotLink
-	for slot := 0; slot < MaxSlot; slot++ {
-		slots = append(slots, nullSlotLink)
+func initSlots() []Slot {
+	var slots []Slot
+	for i := 0; i < MaxSlot; i++ {
+		slots = append(slots, nullSlot)
 	}
 	return slots
 }
