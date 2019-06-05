@@ -16,7 +16,6 @@ import (
 
 const (
 	callDepthOffset = 3
-	timingLevel     = iface.Trace
 )
 
 // A Logger is a logging framework that contains EIGHT slots. Each Slot contains
@@ -181,8 +180,10 @@ func (log *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ..
 	}
 }
 
-func (log *Logger) Timing(args ...interface{}) func() {
-	if log.level > timingLevel {
+func (log *Logger) Timing(level iface.Level, args ...interface{}) func() {
+	checkLevel(level)
+
+	if log.level > level {
 		return func() {}
 	}
 
@@ -190,14 +191,16 @@ func (log *Logger) Timing(args ...interface{}) func() {
 	logLevel := log.config.Level
 	log.lock.Unlock()
 
-	if logLevel <= timingLevel {
-		return log.doneFunc(fmt.Sprint(args...))
+	if logLevel <= level {
+		return log.doneFunc(level, fmt.Sprint(args...))
 	}
 	return func() {}
 }
 
-func (log *Logger) Timingf(fmtstr string, args ...interface{}) func() {
-	if log.level > timingLevel {
+func (log *Logger) Timingf(level iface.Level, fmtstr string, args ...interface{}) func() {
+	checkLevel(level)
+
+	if log.level > level {
 		return func() {}
 	}
 
@@ -205,17 +208,17 @@ func (log *Logger) Timingf(fmtstr string, args ...interface{}) func() {
 	logLevel := log.config.Level
 	log.lock.Unlock()
 
-	if logLevel <= timingLevel {
-		return log.doneFunc(fmt.Sprintf(fmtstr, args...))
+	if logLevel <= level {
+		return log.doneFunc(level, fmt.Sprintf(fmtstr, args...))
 	}
 	return func() {}
 }
 
-func (log *Logger) doneFunc(msg string) func() {
+func (log *Logger) doneFunc(level iface.Level, msg string) func() {
 	now := time.Now()
 	return func() {
 		cost := time.Since(now)
-		log.write(0, timingLevel, fmt.Sprintf("%s (cost: %v)", msg, cost))
+		log.write(0, level, fmt.Sprintf("%s (cost: %v)", msg, cost))
 	}
 }
 

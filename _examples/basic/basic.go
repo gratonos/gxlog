@@ -39,11 +39,11 @@ func testPanic() {
 }
 
 func testTime() {
-	done := log.Timing("test Time")
+	done := log.Timing(iface.Trace, "test Time")
 	time.Sleep(200 * time.Millisecond)
 	done()
 
-	defer log.Timingf("%s", "test Timef")()
+	defer log.Timingf(iface.Trace, "%s", "test Timef")()
 	time.Sleep(400 * time.Millisecond)
 }
 
