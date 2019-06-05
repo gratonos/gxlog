@@ -32,7 +32,7 @@ func testTextFormatter() {
 	log.Trace("green")
 	log.Warn("yellow")
 	log.Error("red")
-	log.Mark(true).Error("magenta")
+	log.WithMark(true).Error("magenta")
 
 	textFmt.SetHeader(text.FullHeader)
 	textFmt.SetColor(iface.Trace, text.Blue)
@@ -44,7 +44,7 @@ func testTextFormatter() {
 	log.Trace("blue")
 	log.Warn("red")
 	log.Error("magenta")
-	log.Mark(true).Error("white")
+	log.WithMark(true).Error("white")
 
 	header := "{{time:time}} {{level:char}} {{file:2%q}}:{{line:%05d}} {{msg:%20s}}\n"
 	textFmt.SetHeader(header)

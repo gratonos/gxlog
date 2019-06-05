@@ -13,25 +13,22 @@ type dynamicContext struct {
 	Value Dynamic
 }
 
-func (log *Logger) Prefix(prefix string) *Logger {
-	clone := *log
-	clone.prefix = prefix
-	return &clone
+func (log Logger) WithPrefix(prefix string) *Logger {
+	log.prefix = prefix
+	return &log
 }
 
 // ATTENTION: You SHOULD be very careful about concurrency safety or deadlocks with
 // dynamic contexts.
-func (log *Logger) Contexts(kvs ...interface{}) *Logger {
-	clone := *log
-	clone.staticContexts, clone.dynamicContexts =
-		appendContexts(clone.staticContexts, clone.dynamicContexts, kvs)
-	return &clone
+func (log Logger) WithContexts(kvs ...interface{}) *Logger {
+	log.staticContexts, log.dynamicContexts =
+		appendContexts(log.staticContexts, log.dynamicContexts, kvs)
+	return &log
 }
 
-func (log *Logger) Mark(ok bool) *Logger {
-	clone := *log
-	clone.mark = ok
-	return &clone
+func (log Logger) WithMark(ok bool) *Logger {
+	log.mark = ok
+	return &log
 }
 
 func appendContexts(staticContexts []iface.Context, dynamicContexts []dynamicContext,

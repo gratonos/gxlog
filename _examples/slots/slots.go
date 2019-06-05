@@ -55,7 +55,7 @@ func testSlotsLevel() {
 	}
 	log.SetSlot(logger.Slot0, slot)
 
-	log.Mark(true).Info("marked, but info")
+	log.WithMark(true).Info("marked, but info")
 	log.Error("error, but not marked")
-	log.Mark(true).Warn("warn and marked")
+	log.WithMark(true).Warn("warn and marked")
 }

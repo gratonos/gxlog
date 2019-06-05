@@ -13,15 +13,15 @@ func main() {
 }
 
 func testAuxiliary() {
-	log.Prefix("**** ").Mark(true).Contexts("k1", "v1", "k2", "v2").
+	log.WithPrefix("**** ").WithMark(true).WithContexts("k1", "v1", "k2", "v2").
 		Info("prefix, mark and contexts")
 	log.Info("no prefix, mark or contexts")
 
 	func() {
-		log := log.Contexts("k3", "v3")
+		log := log.WithContexts("k3", "v3")
 		log.Info("outer enter")
 		func() {
-			log := log.Contexts("k4", "v4")
+			log := log.WithContexts("k4", "v4")
 			log.Info("inner")
 		}()
 		log.Info("outer leave")
@@ -37,7 +37,7 @@ func testDynamicContext() {
 		n++
 		return n
 	})
-	clog := log.Contexts("static", n, "dynamic", fn)
+	clog := log.WithContexts("static", n, "dynamic", fn)
 	clog.Info("dynamic one")
 	clog.Info("dynamic two")
 }
