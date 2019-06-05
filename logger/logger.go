@@ -14,7 +14,10 @@ import (
 	"github.com/gratonos/gxlog/iface"
 )
 
-const callDepthOffset = 3
+const (
+	callDepthOffset = 3
+	timingLevel     = iface.Trace
+)
 
 // A Logger is a logging framework that contains EIGHT slots. Each Slot contains
 // a Formatter and a Writer. A Logger has its own level and filter while each
@@ -23,6 +26,8 @@ const callDepthOffset = 3
 type Logger struct {
 	config *Config
 
+	level           iface.Level
+	filter          Filter
 	prefix          string
 	staticContexts  []iface.Context
 	dynamicContexts []dynamicContext
@@ -147,6 +152,10 @@ func (log *Logger) Panicf(fmtstr string, args ...interface{}) {
 func (log *Logger) Log(callDepth int, level iface.Level, args ...interface{}) {
 	checkLevel(level)
 
+	if log.level > level {
+		return
+	}
+
 	log.lock.Lock()
 	logLevel := log.config.Level
 	log.lock.Unlock()
@@ -159,6 +168,10 @@ func (log *Logger) Log(callDepth int, level iface.Level, args ...interface{}) {
 func (log *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ...interface{}) {
 	checkLevel(level)
 
+	if log.level > level {
+		return
+	}
+
 	log.lock.Lock()
 	logLevel := log.config.Level
 	log.lock.Unlock()
@@ -169,22 +182,30 @@ func (log *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ..
 }
 
 func (log *Logger) Timing(args ...interface{}) func() {
+	if log.level > timingLevel {
+		return func() {}
+	}
+
 	log.lock.Lock()
 	logLevel := log.config.Level
 	log.lock.Unlock()
 
-	if logLevel <= iface.Trace {
+	if logLevel <= timingLevel {
 		return log.doneFunc(fmt.Sprint(args...))
 	}
 	return func() {}
 }
 
 func (log *Logger) Timingf(fmtstr string, args ...interface{}) func() {
+	if log.level > timingLevel {
+		return func() {}
+	}
+
 	log.lock.Lock()
 	logLevel := log.config.Level
 	log.lock.Unlock()
 
-	if logLevel <= iface.Trace {
+	if logLevel <= timingLevel {
 		return log.doneFunc(fmt.Sprintf(fmtstr, args...))
 	}
 	return func() {}
@@ -194,7 +215,7 @@ func (log *Logger) doneFunc(msg string) func() {
 	now := time.Now()
 	return func() {
 		cost := time.Since(now)
-		log.write(0, iface.Trace, fmt.Sprintf("%s (cost: %v)", msg, cost))
+		log.write(0, timingLevel, fmt.Sprintf("%s (cost: %v)", msg, cost))
 	}
 }
 
@@ -215,28 +236,32 @@ func (log *Logger) write(callDepth int, level iface.Level, msg string) {
 
 	log.attachAuxiliary(record)
 
-	if log.config.Filter == nil || log.config.Filter(record) {
-		var formats [MaxSlot][]byte
-		for i := 0; i < MaxSlot; i++ {
-			slot := &log.slots[i]
-			if slot.Level > level {
-				continue
+	if (log.config.Filter != nil && !log.config.Filter(record)) ||
+		(log.filter != nil && !log.filter(record)) {
+		log.lock.Unlock()
+		return
+	}
+
+	var formats [MaxSlot][]byte
+	for i := 0; i < MaxSlot; i++ {
+		slot := &log.slots[i]
+		if slot.Level > level {
+			continue
+		}
+		if slot.Filter != nil && !slot.Filter(record) {
+			continue
+		}
+		format := formats[i]
+		if format == nil && slot.Formatter != nil {
+			format = slot.Formatter.Format(record)
+			for _, id := range log.equivalents[i] {
+				formats[id] = format
 			}
-			if slot.Filter != nil && !slot.Filter(record) {
-				continue
-			}
-			format := formats[i]
-			if format == nil && slot.Formatter != nil {
-				format = slot.Formatter.Format(record)
-				for _, id := range log.equivalents[i] {
-					formats[id] = format
-				}
-			}
-			if slot.Writer != nil {
-				err := slot.Writer.Write(format, record)
-				if err != nil && slot.ErrorHandler != nil {
-					slot.ErrorHandler(format, record, err)
-				}
+		}
+		if slot.Writer != nil {
+			err := slot.Writer.Write(format, record)
+			if err != nil && slot.ErrorHandler != nil {
+				slot.ErrorHandler(format, record, err)
 			}
 		}
 	}

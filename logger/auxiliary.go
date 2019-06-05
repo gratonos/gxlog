@@ -31,6 +31,16 @@ func (log Logger) WithMark(ok bool) *Logger {
 	return &log
 }
 
+func (log Logger) WithLevel(level iface.Level) *Logger {
+	log.level = level
+	return &log
+}
+
+func (log Logger) WithFilter(filter Filter) *Logger {
+	log.filter = filter
+	return &log
+}
+
 func appendContexts(staticContexts []iface.Context, dynamicContexts []dynamicContext,
 	kvs []interface{}) ([]iface.Context, []dynamicContext) {
 
