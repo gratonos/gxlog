@@ -21,8 +21,7 @@ const callDepthOffset = 3
 // Slot has its independent level and filter. Logger calls the Formatter and
 // Writer of each Slot in the order from Slot0 to Slot7 when a log is emitted.
 type Logger struct {
-	level  iface.Level
-	filter Filter
+	config *Config
 
 	prefix          string
 	staticContexts  []iface.Context
@@ -36,8 +35,7 @@ type Logger struct {
 
 func New(config Config) *Logger {
 	return &Logger{
-		level:       config.Level,
-		filter:      config.Filter,
+		config:      &config,
 		slots:       initSlots(),
 		equivalents: make([][]int, MaxSlot),
 		lock:        new(sync.Mutex),
@@ -48,28 +46,28 @@ func (log *Logger) Level() iface.Level {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	return log.level
+	return log.config.Level
 }
 
 func (log *Logger) SetLevel(level iface.Level) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.level = level
+	log.config.Level = level
 }
 
 func (log *Logger) Filter() Filter {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	return log.filter
+	return log.config.Filter
 }
 
 func (log *Logger) SetFilter(filter Filter) {
 	log.lock.Lock()
 	defer log.lock.Unlock()
 
-	log.filter = filter
+	log.config.Filter = filter
 }
 
 func (log *Logger) Trace(args ...interface{}) {
@@ -150,7 +148,7 @@ func (log *Logger) Log(callDepth int, level iface.Level, args ...interface{}) {
 	checkLevel(level)
 
 	log.lock.Lock()
-	logLevel := log.level
+	logLevel := log.config.Level
 	log.lock.Unlock()
 
 	if logLevel <= level {
@@ -162,7 +160,7 @@ func (log *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ..
 	checkLevel(level)
 
 	log.lock.Lock()
-	logLevel := log.level
+	logLevel := log.config.Level
 	log.lock.Unlock()
 
 	if logLevel <= level {
@@ -172,7 +170,7 @@ func (log *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ..
 
 func (log *Logger) Timing(args ...interface{}) func() {
 	log.lock.Lock()
-	logLevel := log.level
+	logLevel := log.config.Level
 	log.lock.Unlock()
 
 	if logLevel <= iface.Trace {
@@ -183,7 +181,7 @@ func (log *Logger) Timing(args ...interface{}) func() {
 
 func (log *Logger) Timingf(fmtstr string, args ...interface{}) func() {
 	log.lock.Lock()
-	logLevel := log.level
+	logLevel := log.config.Level
 	log.lock.Unlock()
 
 	if logLevel <= iface.Trace {
@@ -217,7 +215,7 @@ func (log *Logger) write(callDepth int, level iface.Level, msg string) {
 
 	log.attachAuxiliary(record)
 
-	if log.filter == nil || log.filter(record) {
+	if log.config.Filter == nil || log.config.Filter(record) {
 		var formats [MaxSlot][]byte
 		for i := 0; i < MaxSlot; i++ {
 			slot := &log.slots[i]
