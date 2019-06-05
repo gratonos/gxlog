@@ -22,7 +22,7 @@ func Open(path string) (*Writer, error) {
 	if err := checkAndRemove(path); err != nil {
 		return nil, openError(err)
 	}
-	socket, err := OpenSocket(path)
+	socket, err := openSocket(path)
 	if err != nil {
 		return nil, openError(err)
 	}

@@ -24,9 +24,8 @@ func (log *syslog) Write(timestamp time.Time, priority int, tag string, msg []by
 	if log.conn != nil {
 		if err := log.write(timestamp, priority, tag, msg); err == nil {
 			return nil
-		} else {
-			log.Close()
 		}
+		log.Close()
 	}
 	if err := log.connect(); err != nil {
 		return err
@@ -58,7 +57,7 @@ func (log *syslog) connect() error {
 			}
 		}
 	}
-	return errors.New("Unix syslog delivery error")
+	return errors.New("unix syslog delivery error")
 }
 
 func (log *syslog) write(timestamp time.Time, priority int, tag string, msg []byte) error {

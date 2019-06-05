@@ -13,7 +13,7 @@ type socket struct {
 	lock     sync.Mutex
 }
 
-func OpenSocket(path string) (*socket, error) {
+func openSocket(path string) (*socket, error) {
 	listener, err := net.Listen("unix", path)
 	if err != nil {
 		return nil, err
