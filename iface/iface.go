@@ -24,12 +24,6 @@ type Context struct {
 	Value string
 }
 
-type Auxiliary struct {
-	Prefix   string
-	Contexts []Context
-	Mark     bool
-}
-
 type Record struct {
 	Time  time.Time
 	Level Level
@@ -38,7 +32,10 @@ type Record struct {
 	Pkg   string
 	Func  string
 	Msg   string
-	Aux   Auxiliary
+
+	Prefix   string
+	Contexts []Context
+	Mark     bool
 }
 
 type Formatter interface {

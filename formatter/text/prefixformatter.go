@@ -17,9 +17,10 @@ func newPrefixFormatter(_, fmtspec string) elementFormatter {
 	return &prefixFormatter{fmtspec: fmtspec}
 }
 
-func (formatter *prefixFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if formatter.fmtspec == "%s" {
-		return append(buf, record.Aux.Prefix...)
+func (this *prefixFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
+	if this.fmtspec == "%s" {
+		return append(buf, record.Prefix...)
+	} else {
+		return append(buf, fmt.Sprintf(this.fmtspec, record.Prefix)...)
 	}
-	return append(buf, fmt.Sprintf(formatter.fmtspec, record.Aux.Prefix)...)
 }

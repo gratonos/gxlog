@@ -40,17 +40,19 @@ func newLevelFormatter(property, fmtspec string) elementFormatter {
 	}
 }
 
-func (formatter *levelFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	desc := formatter.descList[record.Level]
-	if formatter.fmtspec == "%s" {
+func (this *levelFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
+	desc := this.descList[record.Level]
+	if this.fmtspec == "%s" {
 		return append(buf, desc...)
+	} else {
+		return append(buf, fmt.Sprintf(this.fmtspec, desc)...)
 	}
-	return append(buf, fmt.Sprintf(formatter.fmtspec, desc)...)
 }
 
 func selectDescList(property string) []string {
 	if strings.ToLower(property) == "char" {
 		return levelDescChar
+	} else {
+		return levelDesc
 	}
-	return levelDesc
 }

@@ -20,39 +20,39 @@ func syslogDial() (*syslog, error) {
 	return log, nil
 }
 
-func (log *syslog) Write(timestamp time.Time, priority int, tag string, msg []byte) error {
-	if log.conn != nil {
-		if err := log.write(timestamp, priority, tag, msg); err == nil {
+func (this *syslog) Write(timestamp time.Time, priority int, tag string, msg []byte) error {
+	if this.conn != nil {
+		if err := this.write(timestamp, priority, tag, msg); err == nil {
 			return nil
 		}
-		log.Close()
+		this.Close()
 	}
-	if err := log.connect(); err != nil {
+	if err := this.connect(); err != nil {
 		return err
 	}
-	if err := log.write(timestamp, priority, tag, msg); err != nil {
-		log.Close()
-		return err
-	}
-	return nil
-}
-
-func (log *syslog) Close() error {
-	if log.conn != nil {
-		err := log.conn.Close()
-		log.conn = nil
+	if err := this.write(timestamp, priority, tag, msg); err != nil {
+		this.Close()
 		return err
 	}
 	return nil
 }
 
-func (log *syslog) connect() error {
+func (this *syslog) Close() error {
+	if this.conn != nil {
+		err := this.conn.Close()
+		this.conn = nil
+		return err
+	}
+	return nil
+}
+
+func (this *syslog) connect() error {
 	networks := []string{"unixgram", "unix"}
 	paths := []string{"/dev/log", "/var/run/syslog", "/var/run/log"}
 	for _, network := range networks {
 		for _, path := range paths {
 			if conn, err := net.Dial(network, path); err == nil {
-				log.conn = conn
+				this.conn = conn
 				return nil
 			}
 		}
@@ -60,8 +60,8 @@ func (log *syslog) connect() error {
 	return errors.New("unix syslog delivery error")
 }
 
-func (log *syslog) write(timestamp time.Time, priority int, tag string, msg []byte) error {
-	_, err := fmt.Fprintf(log.conn, "<%d>%s %s[%d]: %s",
+func (this *syslog) write(timestamp time.Time, priority int, tag string, msg []byte) error {
+	_, err := fmt.Fprintf(this.conn, "<%d>%s %s[%d]: %s",
 		priority, timestamp.Format(time.Stamp), tag, os.Getpid(), msg)
 	return err
 }

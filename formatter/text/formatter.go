@@ -32,19 +32,19 @@ func New(config Config) *Formatter {
 	return formatter
 }
 
-func (formatter *Formatter) Header() string {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) Header() string {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return formatter.header
+	return this.header
 }
 
-func (formatter *Formatter) SetHeader(header string) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) SetHeader(header string) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.header = header
-	formatter.appenders = formatter.appenders[:0]
+	this.header = header
+	this.appenders = this.appenders[:0]
 	var staticText string
 	for header != "" {
 		indexes := headerRegexp.FindStringSubmatchIndex(header)
@@ -53,99 +53,99 @@ func (formatter *Formatter) SetHeader(header string) {
 		}
 		begin, end := indexes[0], indexes[1]
 		staticText += header[:begin]
-		element, property, fmtspec := extractElement(indexes, header)
-		if formatter.addAppender(element, property, fmtspec, staticText) {
+		element, property, fmtspec := extractElement(header, indexes)
+		if this.addAppender(element, property, fmtspec, staticText) {
 			staticText = ""
 		}
 		header = header[end:]
 	}
-	formatter.suffix = staticText + header
+	this.suffix = staticText + header
 }
 
-func (formatter *Formatter) Coloring() bool {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) Coloring() bool {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return formatter.coloring
+	return this.coloring
 }
 
-func (formatter *Formatter) SetColoring(ok bool) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) SetColoring(ok bool) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.coloring = ok
+	this.coloring = ok
 }
 
-func (formatter *Formatter) Color(level iface.Level) Color {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) Color(level iface.Level) Color {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return formatter.colorMgr.Color(level)
+	return this.colorMgr.Color(level)
 }
 
-func (formatter *Formatter) SetColor(level iface.Level, color Color) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) SetColor(level iface.Level, color Color) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.colorMgr.SetColor(level, color)
+	this.colorMgr.SetColor(level, color)
 }
 
-func (formatter *Formatter) MapColors(colorMap map[iface.Level]Color) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) MapColors(colorMap map[iface.Level]Color) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.colorMgr.MapColors(colorMap)
+	this.colorMgr.MapColors(colorMap)
 }
 
-func (formatter *Formatter) MarkColor() Color {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) MarkColor() Color {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return formatter.colorMgr.MarkColor()
+	return this.colorMgr.MarkColor()
 }
 
-func (formatter *Formatter) SetMarkColor(color Color) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) SetMarkColor(color Color) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.colorMgr.SetMarkColor(color)
+	this.colorMgr.SetMarkColor(color)
 }
 
-func (formatter *Formatter) Format(record *iface.Record) []byte {
-	formatter.lock.Lock()
+func (this *Formatter) Format(record *iface.Record) []byte {
+	this.lock.Lock()
 
 	var left, right []byte
-	if formatter.coloring {
-		if record.Aux.Mark {
-			left, right = formatter.colorMgr.MarkColorEars()
+	if this.coloring {
+		if record.Mark {
+			left, right = this.colorMgr.MarkColorEars()
 		} else {
-			left, right = formatter.colorMgr.ColorEars(record.Level)
+			left, right = this.colorMgr.ColorEars(record.Level)
 		}
 	}
 
-	buf := formatter.buf[:0]
+	buf := this.buf[:0]
 	buf = append(buf, left...)
-	for _, appender := range formatter.appenders {
+	for _, appender := range this.appenders {
 		buf = appender.AppendHeader(buf, record)
 	}
-	buf = append(buf, formatter.suffix...)
+	buf = append(buf, this.suffix...)
 	buf = append(buf, right...)
-	formatter.buf = buf
+	this.buf = buf
 
-	formatter.lock.Unlock()
+	this.lock.Unlock()
 	return buf
 }
 
-func (formatter *Formatter) addAppender(element, property, fmtspec, staticText string) bool {
+func (this *Formatter) addAppender(element, property, fmtspec, staticText string) bool {
 	appender := newHeaderAppender(element, property, fmtspec, staticText)
 	if appender == nil {
 		return false
 	}
-	formatter.appenders = append(formatter.appenders, appender)
+	this.appenders = append(this.appenders, appender)
 	return true
 }
 
-func extractElement(indexes []int, header string) (element, property, fmtspec string) {
+func extractElement(header string, indexes []int) (element, property, fmtspec string) {
 	element = strings.ToLower(getField(header, indexes[2], indexes[3]))
 	property = getField(header, indexes[4], indexes[5])
 	fmtspec = getField(header, indexes[6], indexes[7])
@@ -158,6 +158,7 @@ func extractElement(indexes []int, header string) (element, property, fmtspec st
 func getField(header string, begin, end int) string {
 	if begin < end {
 		return strings.TrimSpace(header[begin:end])
+	} else {
+		return ""
 	}
-	return ""
 }

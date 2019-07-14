@@ -8,18 +8,18 @@ import (
 )
 
 type Config struct {
-	Path        string
+	Dir         string
 	MaxFileSize int64
 }
 
-func (config *Config) SetDefaults() {
-	if config.Path == "" {
-		config.Path = fmt.Sprintf("%s.%d", filepath.Base(os.Args[0]), os.Getpid())
+func (this *Config) SetDefaults() {
+	if this.Dir == "" {
+		this.Dir = fmt.Sprintf("%s.%d", filepath.Base(os.Args[0]), os.Getpid())
 	}
 
-	if config.MaxFileSize == 0 {
-		config.MaxFileSize = 20 * 1024 * 1024
-	} else if config.MaxFileSize < 0 {
-		config.MaxFileSize = math.MaxInt64
+	if this.MaxFileSize == 0 {
+		this.MaxFileSize = 20 * 1024 * 1024
+	} else if this.MaxFileSize < 0 {
+		this.MaxFileSize = math.MaxInt64
 	}
 }

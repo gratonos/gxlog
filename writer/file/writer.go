@@ -23,13 +23,13 @@ const (
 )
 
 type Writer struct {
-	path        string
+	dir         string
 	maxFileSize int64
 
 	writer    io.WriteCloser
-	pathname  string
+	path      string
 	checkTime time.Time
-	day       int
+	yearDay   int
 	fileSize  int64
 	lock      sync.Mutex
 }
@@ -37,37 +37,37 @@ type Writer struct {
 func Open(config Config) (*Writer, error) {
 	config.SetDefaults()
 
-	if err := checkPath(config.Path); err != nil {
+	if err := checkDir(config.Dir); err != nil {
 		return nil, fmt.Errorf("writer/file.Open: %v", err)
 	}
 
 	return &Writer{
-		path:        config.Path,
+		dir:         config.Dir,
 		maxFileSize: config.MaxFileSize,
 	}, nil
 }
 
-func (writer *Writer) Close() error {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) Close() error {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	if err := writer.closeFile(); err != nil {
+	if err := this.closeFile(); err != nil {
 		return fmt.Errorf("writer/file.Close: %v", err)
 	}
 	return nil
 }
 
-func (writer *Writer) Write(bs []byte, record *iface.Record) error {
-	writer.lock.Lock()
+func (this *Writer) Write(bs []byte, record *iface.Record) error {
+	this.lock.Lock()
 
-	err := writer.checkFile(record)
+	err := this.checkFile(record)
 	if err == nil {
 		var n int
-		n, err = writer.writer.Write(bs)
-		writer.fileSize += int64(n)
+		n, err = this.writer.Write(bs)
+		this.fileSize += int64(n)
 	}
 
-	writer.lock.Unlock()
+	this.lock.Unlock()
 
 	if err != nil {
 		return fmt.Errorf("writer/file.Write: %v", err)
@@ -75,107 +75,107 @@ func (writer *Writer) Write(bs []byte, record *iface.Record) error {
 	return nil
 }
 
-func (writer *Writer) Path() string {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) Dir() string {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return writer.path
+	return this.dir
 }
 
-func (writer *Writer) SetPath(path string) error {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) SetDir(dir string) error {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	if path == writer.path {
+	if dir == this.dir {
 		return nil
 	}
-	if err := checkPath(path); err != nil {
-		return fmt.Errorf("writer/file.SetPath: %v", err)
+	if err := checkDir(dir); err != nil {
+		return fmt.Errorf("writer/file.SetDir: %v", err)
 	}
-	if err := writer.closeFile(); err != nil {
-		return fmt.Errorf("writer/file.SetPath: %v", err)
+	if err := this.closeFile(); err != nil {
+		return fmt.Errorf("writer/file.SetDir: %v", err)
 	}
-	writer.path = path
+	this.dir = dir
 	return nil
 }
 
-func (writer *Writer) MaxFileSize() int64 {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) MaxFileSize() int64 {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return writer.maxFileSize
+	return this.maxFileSize
 }
 
-func (writer *Writer) SetMaxFileSize(size int64) error {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) SetMaxFileSize(size int64) error {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
 	if size <= 0 {
 		return errors.New("writer/file.SetMaxFileSize: size must be positive")
 	}
-	writer.maxFileSize = size
+	this.maxFileSize = size
 	return nil
 }
 
-func (writer *Writer) checkFile(record *iface.Record) error {
-	if writer.writer == nil ||
-		writer.day != record.Time.YearDay() ||
-		writer.fileSize >= writer.maxFileSize {
-		return writer.createFile(record)
-	} else if time.Since(writer.checkTime) >= checkInterval {
-		writer.checkTime = time.Now()
-		_, err := os.Stat(writer.pathname)
+func (this *Writer) checkFile(record *iface.Record) error {
+	if this.writer == nil ||
+		this.yearDay != record.Time.YearDay() ||
+		this.fileSize >= this.maxFileSize {
+		return this.createFile(record)
+	} else if time.Since(this.checkTime) >= checkInterval {
+		this.checkTime = time.Now()
+		_, err := os.Stat(this.path)
 		if os.IsNotExist(err) {
-			return writer.createFile(record)
-		}
-		if err != nil {
+			return this.createFile(record)
+		} else {
 			return err
 		}
+	} else {
+		return nil
 	}
-	return nil
 }
 
-func (writer *Writer) createFile(record *iface.Record) error {
-	if err := writer.closeFile(); err != nil {
+func (this *Writer) createFile(record *iface.Record) error {
+	if err := this.closeFile(); err != nil {
 		return err
 	}
 
 	date := fmt.Sprintf(dateFormat, record.Time.Year(), record.Time.Month(), record.Time.Day())
-	path := filepath.Join(writer.path, date)
-	if err := os.MkdirAll(path, dirPerm); err != nil {
+	dir := filepath.Join(this.dir, date)
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		return err
 	}
 
 	clock := fmt.Sprintf(timeFormat, record.Time.Hour(), record.Time.Minute(),
 		record.Time.Second(), record.Time.Nanosecond()/1000)
 	filename := clock + extension
-	pathname := filepath.Join(path, filename)
-	file, err := os.Create(pathname)
+	path := filepath.Join(dir, filename)
+	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 
-	writer.writer = file
-	writer.pathname = pathname
-	writer.day = record.Time.YearDay()
-	writer.fileSize = 0
+	this.writer = file
+	this.path = path
+	this.yearDay = record.Time.YearDay()
+	this.fileSize = 0
 
 	return nil
 }
 
-func (writer *Writer) closeFile() error {
-	if writer.writer != nil {
-		if err := writer.writer.Close(); err != nil {
+func (this *Writer) closeFile() error {
+	if this.writer != nil {
+		if err := this.writer.Close(); err != nil {
 			return err
 		}
-		writer.writer = nil
+		this.writer = nil
 	}
 	return nil
 }
 
-func checkPath(path string) error {
-	if err := os.MkdirAll(path, dirPerm); err != nil {
+func checkDir(dir string) error {
+	if err := os.MkdirAll(dir, dirPerm); err != nil {
 		return err
 	}
-	return syscall.Access(path, 7 /* R_OK | W_OK | X_OK */)
+	return syscall.Access(dir, 7 /* R_OK | W_OK | X_OK */)
 }

@@ -54,9 +54,9 @@ type Config struct {
 	MarkColor Color
 }
 
-func (config *Config) SetDefaults() {
-	if config.Header == "" {
-		config.Header = CompactHeader
+func (this *Config) SetDefaults() {
+	if this.Header == "" {
+		this.Header = CompactHeader
 	}
 
 	colorMap := map[iface.Level]Color{
@@ -67,12 +67,12 @@ func (config *Config) SetDefaults() {
 		iface.Error: Red,
 		iface.Fatal: Red,
 	}
-	for level, color := range config.ColorMap {
+	for level, color := range this.ColorMap {
 		colorMap[level] = color
 	}
-	config.ColorMap = colorMap
+	this.ColorMap = colorMap
 
-	if config.MarkColor == 0 {
-		config.MarkColor = Magenta
+	if this.MarkColor == 0 {
+		this.MarkColor = Magenta
 	}
 }

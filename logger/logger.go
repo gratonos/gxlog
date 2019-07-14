@@ -18,20 +18,23 @@ const (
 	callDepthOffset = 3
 )
 
+type additional struct {
+	Level    iface.Level
+	Filter   Filter
+	Prefix   string
+	Statics  []iface.Context
+	Dynamics []dynamicContext
+	Mark     bool
+}
+
 // A Logger is a logging framework that contains EIGHT slots. Each Slot contains
 // a Formatter and a Writer. A Logger has its own level and filter while each
 // Slot has its independent level and filter. Logger calls the Formatter and
 // Writer of each Slot in the order from Slot0 to Slot7 when a log is emitted.
 type Logger struct {
-	config *Config
+	additional additional // copy on write, concurrency safe
 
-	level           iface.Level
-	filter          Filter
-	prefix          string
-	staticContexts  []iface.Context
-	dynamicContexts []dynamicContext
-	mark            bool
-
+	config      *Config
 	slots       []Slot
 	equivalents [][]int // indexes of equivalent formatters
 	lock        *sync.Mutex
@@ -46,208 +49,196 @@ func New(config Config) *Logger {
 	}
 }
 
-func (log *Logger) Level() iface.Level {
-	log.lock.Lock()
-	defer log.lock.Unlock()
+func (this *Logger) Level() iface.Level {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return log.config.Level
+	return this.config.Level
 }
 
-func (log *Logger) SetLevel(level iface.Level) {
-	log.lock.Lock()
-	defer log.lock.Unlock()
+func (this *Logger) SetLevel(level iface.Level) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	log.config.Level = level
+	this.config.Level = level
 }
 
-func (log *Logger) Filter() Filter {
-	log.lock.Lock()
-	defer log.lock.Unlock()
+func (this *Logger) Filter() Filter {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return log.config.Filter
+	return this.config.Filter
 }
 
-func (log *Logger) SetFilter(filter Filter) {
-	log.lock.Lock()
-	defer log.lock.Unlock()
+func (this *Logger) SetFilter(filter Filter) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	log.config.Filter = filter
+	this.config.Filter = filter
 }
 
-func (log *Logger) Trace(args ...interface{}) {
-	log.Log(1, iface.Trace, args...)
+func (this *Logger) Trace(args ...interface{}) {
+	this.Log(1, iface.Trace, args...)
 }
 
-func (log *Logger) Tracef(fmtstr string, args ...interface{}) {
-	log.Logf(1, iface.Trace, fmtstr, args...)
+func (this *Logger) Tracef(fmtstr string, args ...interface{}) {
+	this.Logf(1, iface.Trace, fmtstr, args...)
 }
 
-func (log *Logger) Debug(args ...interface{}) {
-	log.Log(1, iface.Debug, args...)
+func (this *Logger) Debug(args ...interface{}) {
+	this.Log(1, iface.Debug, args...)
 }
 
-func (log *Logger) Debugf(fmtstr string, args ...interface{}) {
-	log.Logf(1, iface.Debug, fmtstr, args...)
+func (this *Logger) Debugf(fmtstr string, args ...interface{}) {
+	this.Logf(1, iface.Debug, fmtstr, args...)
 }
 
-func (log *Logger) Info(args ...interface{}) {
-	log.Log(1, iface.Info, args...)
+func (this *Logger) Info(args ...interface{}) {
+	this.Log(1, iface.Info, args...)
 }
 
-func (log *Logger) Infof(fmtstr string, args ...interface{}) {
-	log.Logf(1, iface.Info, fmtstr, args...)
+func (this *Logger) Infof(fmtstr string, args ...interface{}) {
+	this.Logf(1, iface.Info, fmtstr, args...)
 }
 
-func (log *Logger) Warn(args ...interface{}) {
-	log.Log(1, iface.Warn, args...)
+func (this *Logger) Warn(args ...interface{}) {
+	this.Log(1, iface.Warn, args...)
 }
 
-func (log *Logger) Warnf(fmtstr string, args ...interface{}) {
-	log.Logf(1, iface.Warn, fmtstr, args...)
+func (this *Logger) Warnf(fmtstr string, args ...interface{}) {
+	this.Logf(1, iface.Warn, fmtstr, args...)
 }
 
-func (log *Logger) Error(args ...interface{}) {
-	log.Log(1, iface.Error, args...)
+func (this *Logger) Error(args ...interface{}) {
+	this.Log(1, iface.Error, args...)
 }
 
-func (log *Logger) Errorf(fmtstr string, args ...interface{}) {
-	log.Logf(1, iface.Error, fmtstr, args...)
+func (this *Logger) Errorf(fmtstr string, args ...interface{}) {
+	this.Logf(1, iface.Error, fmtstr, args...)
 }
 
-func (log *Logger) Fatal(args ...interface{}) {
-	log.Log(1, iface.Fatal, args...)
+func (this *Logger) Fatal(args ...interface{}) {
+	this.Log(1, iface.Fatal, args...)
 	os.Exit(1)
 }
 
-func (log *Logger) Fatalf(fmtstr string, args ...interface{}) {
-	log.Logf(1, iface.Fatal, fmtstr, args...)
+func (this *Logger) Fatalf(fmtstr string, args ...interface{}) {
+	this.Logf(1, iface.Fatal, fmtstr, args...)
 	os.Exit(1)
 }
 
-func (log *Logger) EError(args ...interface{}) error {
+func (this *Logger) EError(args ...interface{}) error {
 	msg := fmt.Sprint(args...)
-	log.Log(1, iface.Error, msg)
+	this.Log(1, iface.Error, msg)
 	return errors.New(msg)
 }
 
-func (log *Logger) EErrorf(fmtstr string, args ...interface{}) error {
+func (this *Logger) EErrorf(fmtstr string, args ...interface{}) error {
 	msg := fmt.Sprintf(fmtstr, args...)
-	log.Log(1, iface.Error, msg)
+	this.Log(1, iface.Error, msg)
 	return errors.New(msg)
 }
 
-func (log *Logger) Panic(args ...interface{}) {
+func (this *Logger) Panic(args ...interface{}) {
 	msg := fmt.Sprint(args...)
-	log.Log(1, iface.Fatal, msg)
+	this.Log(1, iface.Fatal, msg)
 	panic(msg)
 }
 
-func (log *Logger) Panicf(fmtstr string, args ...interface{}) {
+func (this *Logger) Panicf(fmtstr string, args ...interface{}) {
 	msg := fmt.Sprintf(fmtstr, args...)
-	log.Log(1, iface.Fatal, msg)
+	this.Log(1, iface.Fatal, msg)
 	panic(msg)
 }
 
-func (log *Logger) Log(callDepth int, level iface.Level, args ...interface{}) {
-	checkLevel(level)
-
-	if log.level > level {
-		return
-	}
-
-	log.lock.Lock()
-	logLevel := log.config.Level
-	log.lock.Unlock()
-
-	if logLevel <= level {
-		log.write(callDepth, level, fmt.Sprint(args...))
+func (this *Logger) Log(callDepth int, level iface.Level, args ...interface{}) {
+	if this.needToLog(level) {
+		this.log(callDepth, level, fmt.Sprint(args...))
 	}
 }
 
-func (log *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ...interface{}) {
-	checkLevel(level)
-
-	if log.level > level {
-		return
-	}
-
-	log.lock.Lock()
-	logLevel := log.config.Level
-	log.lock.Unlock()
-
-	if logLevel <= level {
-		log.write(callDepth, level, fmt.Sprintf(fmtstr, args...))
+func (this *Logger) Logf(callDepth int, level iface.Level, fmtstr string, args ...interface{}) {
+	if this.needToLog(level) {
+		this.log(callDepth, level, fmt.Sprintf(fmtstr, args...))
 	}
 }
 
-func (log *Logger) Timing(level iface.Level, args ...interface{}) func() {
-	checkLevel(level)
-
-	if log.level > level {
+func (this *Logger) Timing(level iface.Level, args ...interface{}) func() {
+	if this.needToLog(level) {
+		return this.doneFunc(level, fmt.Sprint(args...))
+	} else {
 		return func() {}
 	}
-
-	log.lock.Lock()
-	logLevel := log.config.Level
-	log.lock.Unlock()
-
-	if logLevel <= level {
-		return log.doneFunc(level, fmt.Sprint(args...))
-	}
-	return func() {}
 }
 
-func (log *Logger) Timingf(level iface.Level, fmtstr string, args ...interface{}) func() {
-	checkLevel(level)
-
-	if log.level > level {
+func (this *Logger) Timingf(level iface.Level, fmtstr string, args ...interface{}) func() {
+	if this.needToLog(level) {
+		return this.doneFunc(level, fmt.Sprintf(fmtstr, args...))
+	} else {
 		return func() {}
 	}
-
-	log.lock.Lock()
-	logLevel := log.config.Level
-	log.lock.Unlock()
-
-	if logLevel <= level {
-		return log.doneFunc(level, fmt.Sprintf(fmtstr, args...))
-	}
-	return func() {}
 }
 
-func (log *Logger) doneFunc(level iface.Level, msg string) func() {
+func (this *Logger) needToLog(level iface.Level) (need bool) {
+	if level < iface.Trace || level > iface.Fatal {
+		panic(fmt.Sprintf("gxlog: invalid log level: %d", level))
+	}
+
+	this.lock.Lock()
+	if this.additional.Level <= level && this.config.Level <= level {
+		need = true
+	}
+	this.lock.Unlock()
+
+	return need
+}
+
+func (this *Logger) doneFunc(level iface.Level, msg string) func() {
 	now := time.Now()
 	return func() {
 		cost := time.Since(now)
-		log.write(0, level, fmt.Sprintf("%s (cost: %v)", msg, cost))
+		this.log(0, level, fmt.Sprintf("%s (cost: %v)", msg, cost))
 	}
 }
 
-func (log *Logger) write(callDepth int, level iface.Level, msg string) {
+func (this *Logger) log(callDepth int, level iface.Level, msg string) {
 	file, line, pkg, fn := getPosInfo(callDepth + callDepthOffset)
 
-	log.lock.Lock()
+	this.lock.Lock()
 
 	record := &iface.Record{
-		Time:  time.Now(),
-		Level: level,
-		File:  file,
-		Line:  line,
-		Pkg:   pkg,
-		Func:  fn,
-		Msg:   msg,
+		Time:     time.Now(),
+		Level:    level,
+		File:     file,
+		Line:     line,
+		Pkg:      pkg,
+		Func:     fn,
+		Msg:      msg,
+		Prefix:   this.additional.Prefix,
+		Contexts: this.additional.Statics,
+		Mark:     this.additional.Mark,
+	}
+	for _, context := range this.additional.Dynamics {
+		record.Contexts = append(record.Contexts, iface.Context{
+			Key:   fmt.Sprint(context.Key),
+			Value: fmt.Sprint(context.Value(context.Key)),
+		})
 	}
 
-	log.attachAuxiliary(record)
+	this.formatAndWrite(level, record)
 
-	if (log.config.Filter != nil && !log.config.Filter(record)) ||
-		(log.filter != nil && !log.filter(record)) {
-		log.lock.Unlock()
+	this.lock.Unlock()
+}
+
+func (this *Logger) formatAndWrite(level iface.Level, record *iface.Record) {
+	if (this.additional.Filter != nil && !this.additional.Filter(record)) ||
+		(this.config.Filter != nil && !this.config.Filter(record)) {
 		return
 	}
 
 	var formats [MaxSlot][]byte
 	for i := 0; i < MaxSlot; i++ {
-		slot := &log.slots[i]
+		slot := &this.slots[i]
 		if slot.Level > level {
 			continue
 		}
@@ -257,7 +248,7 @@ func (log *Logger) write(callDepth int, level iface.Level, msg string) {
 		format := formats[i]
 		if format == nil && slot.Formatter != nil {
 			format = slot.Formatter.Format(record)
-			for _, id := range log.equivalents[i] {
+			for _, id := range this.equivalents[i] {
 				formats[id] = format
 			}
 		}
@@ -268,20 +259,6 @@ func (log *Logger) write(callDepth int, level iface.Level, msg string) {
 			}
 		}
 	}
-
-	log.lock.Unlock()
-}
-
-func (log *Logger) attachAuxiliary(record *iface.Record) {
-	record.Aux.Prefix = log.prefix
-	record.Aux.Contexts = log.staticContexts
-	for _, context := range log.dynamicContexts {
-		record.Aux.Contexts = append(record.Aux.Contexts, iface.Context{
-			Key:   fmt.Sprint(context.Key),
-			Value: fmt.Sprint(context.Value(context.Key)),
-		})
-	}
-	record.Aux.Mark = log.mark
 }
 
 func getPosInfo(callDepth int) (file string, line int, pkg, fn string) {
@@ -308,10 +285,4 @@ func splitPkgAndFunc(name string) (string, string) {
 	}
 	nextDot += (lastSlash + 1)
 	return name[:nextDot], name[nextDot+1:]
-}
-
-func checkLevel(level iface.Level) {
-	if level < iface.Trace || level > iface.Fatal {
-		panic(fmt.Sprintf("gxlog: invalid log level: %d", level))
-	}
 }

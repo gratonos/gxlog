@@ -24,10 +24,11 @@ func newPkgFormatter(property, fmtspec string) elementFormatter {
 	}
 }
 
-func (formatter *pkgFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	pkg := util.LastSegments(record.Pkg, formatter.segments, '/')
-	if formatter.fmtspec == "%s" {
+func (this *pkgFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
+	pkg := util.LastSegments(record.Pkg, this.segments, '/')
+	if this.fmtspec == "%s" {
 		return append(buf, pkg...)
+	} else {
+		return append(buf, fmt.Sprintf(this.fmtspec, pkg)...)
 	}
-	return append(buf, fmt.Sprintf(formatter.fmtspec, pkg)...)
 }

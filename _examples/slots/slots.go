@@ -45,7 +45,7 @@ func testSlotsLevel() {
 		return nil
 	})
 	filter := func(record *iface.Record) bool {
-		return record.Aux.Mark
+		return record.Mark
 	}
 	slot := logger.Slot{
 		Formatter:    hook,

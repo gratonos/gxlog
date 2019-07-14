@@ -23,20 +23,22 @@ func newContextFormatter(property, fmtspec string) elementFormatter {
 	}
 }
 
-func (formatter *contextFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if formatter.fmtspec == "%s" {
-		return formatter.formatter(buf, record.Aux.Contexts)
+func (this *contextFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
+	if this.fmtspec == "%s" {
+		return this.formatter(buf, record.Contexts)
+	} else {
+		this.buf = this.buf[:0]
+		this.buf = this.formatter(this.buf, record.Contexts)
+		return append(buf, fmt.Sprintf(this.fmtspec, this.buf)...)
 	}
-	formatter.buf = formatter.buf[:0]
-	formatter.buf = formatter.formatter(formatter.buf, record.Aux.Contexts)
-	return append(buf, fmt.Sprintf(formatter.fmtspec, formatter.buf)...)
 }
 
 func selectFormatter(property string) func([]byte, []iface.Context) []byte {
 	if strings.ToLower(property) == "list" {
 		return formatList
+	} else {
+		return formatPair
 	}
-	return formatPair
 }
 
 func formatPair(buf []byte, contexts []iface.Context) []byte {

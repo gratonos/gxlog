@@ -87,7 +87,7 @@ func TestColor(t *testing.T) {
 
 	record := tmplRecord()
 	record.Level = iface.Warn
-	record.Aux.Mark = false
+	record.Mark = false
 	formatter.MapColors(map[iface.Level]text.Color{
 		iface.Warn: text.Blue,
 	})
@@ -109,20 +109,18 @@ func testFormat(t *testing.T, formatter iface.Formatter, record *iface.Record, e
 
 func tmplRecord() *iface.Record {
 	return &iface.Record{
-		Time:  tmplTimestamp,
-		Level: tmplLevel,
-		File:  tmplFile,
-		Line:  tmplLine,
-		Pkg:   tmplPkg,
-		Func:  tmplFunc,
-		Msg:   tmplMsg,
-		Aux: iface.Auxiliary{
-			Prefix: tmplPrefix,
-			Contexts: []iface.Context{
-				{Key: "k1", Value: "v1"},
-				{Key: "k2", Value: "v2"},
-			},
-			Mark: true,
+		Time:   tmplTimestamp,
+		Level:  tmplLevel,
+		File:   tmplFile,
+		Line:   tmplLine,
+		Pkg:    tmplPkg,
+		Func:   tmplFunc,
+		Msg:    tmplMsg,
+		Prefix: tmplPrefix,
+		Contexts: []iface.Context{
+			{Key: "k1", Value: "v1"},
+			{Key: "k2", Value: "v2"},
 		},
+		Mark: true,
 	}
 }

@@ -8,6 +8,6 @@ import (
 // Do NOT call any method of the Logger within the function, or it may deadlock.
 type Func func(record *iface.Record) []byte
 
-func (fn Func) Format(record *iface.Record) []byte {
-	return fn(record)
+func (self Func) Format(record *iface.Record) []byte {
+	return self(record)
 }

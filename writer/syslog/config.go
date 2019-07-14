@@ -43,9 +43,9 @@ type Config struct {
 	SeverityMap map[iface.Level]Severity
 }
 
-func (config *Config) SetDefaults() {
-	if config.Tag == "" {
-		config.Tag = filepath.Base(os.Args[0])
+func (this *Config) SetDefaults() {
+	if this.Tag == "" {
+		this.Tag = filepath.Base(os.Args[0])
 	}
 
 	severityMap := map[iface.Level]Severity{
@@ -56,8 +56,8 @@ func (config *Config) SetDefaults() {
 		iface.Error: SevErr,
 		iface.Fatal: SevCrit,
 	}
-	for level, severity := range config.SeverityMap {
+	for level, severity := range this.SeverityMap {
 		severityMap[level] = severity
 	}
-	config.SeverityMap = severityMap
+	this.SeverityMap = severityMap
 }

@@ -24,10 +24,11 @@ func newFuncFormatter(property, fmtspec string) elementFormatter {
 	}
 }
 
-func (formatter *funcFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	fn := util.LastSegments(record.Func, formatter.segments, '.')
-	if formatter.fmtspec == "%s" {
+func (this *funcFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
+	fn := util.LastSegments(record.Func, this.segments, '.')
+	if this.fmtspec == "%s" {
 		return append(buf, fn...)
+	} else {
+		return append(buf, fmt.Sprintf(this.fmtspec, fn)...)
 	}
-	return append(buf, fmt.Sprintf(formatter.fmtspec, fn)...)
 }

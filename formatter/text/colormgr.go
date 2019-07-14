@@ -26,36 +26,36 @@ func newColorMgr(colorMap map[iface.Level]Color, markColor Color) *colorMgr {
 	return mgr
 }
 
-func (mgr *colorMgr) Color(level iface.Level) Color {
-	return mgr.colors[level]
+func (this *colorMgr) Color(level iface.Level) Color {
+	return this.colors[level]
 }
 
-func (mgr *colorMgr) SetColor(level iface.Level, color Color) {
-	mgr.colors[level] = color
-	mgr.colorSeqs[level] = makeColorSeq(color)
+func (this *colorMgr) SetColor(level iface.Level, color Color) {
+	this.colors[level] = color
+	this.colorSeqs[level] = makeColorSeq(color)
 }
 
-func (mgr *colorMgr) MapColors(colorMap map[iface.Level]Color) {
+func (this *colorMgr) MapColors(colorMap map[iface.Level]Color) {
 	for level, color := range colorMap {
-		mgr.SetColor(level, color)
+		this.SetColor(level, color)
 	}
 }
 
-func (mgr *colorMgr) MarkColor() Color {
-	return mgr.markColor
+func (this *colorMgr) MarkColor() Color {
+	return this.markColor
 }
 
-func (mgr *colorMgr) SetMarkColor(color Color) {
-	mgr.markColor = color
-	mgr.markColorSeq = makeColorSeq(color)
+func (this *colorMgr) SetMarkColor(color Color) {
+	this.markColor = color
+	this.markColorSeq = makeColorSeq(color)
 }
 
-func (mgr *colorMgr) ColorEars(level iface.Level) ([]byte, []byte) {
-	return mgr.colorSeqs[level], mgr.resetSeq
+func (this *colorMgr) ColorEars(level iface.Level) ([]byte, []byte) {
+	return this.colorSeqs[level], this.resetSeq
 }
 
-func (mgr *colorMgr) MarkColorEars() ([]byte, []byte) {
-	return mgr.markColorSeq, mgr.resetSeq
+func (this *colorMgr) MarkColorEars() ([]byte, []byte) {
+	return this.markColorSeq, this.resetSeq
 }
 
 func makeColorSeq(color Color) []byte {

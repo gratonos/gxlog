@@ -17,9 +17,10 @@ func newMsgFormatter(_, fmtspec string) elementFormatter {
 	return &msgFormatter{fmtspec: fmtspec}
 }
 
-func (formatter *msgFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if formatter.fmtspec == "%s" {
+func (this *msgFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
+	if this.fmtspec == "%s" {
 		return append(buf, record.Msg...)
+	} else {
+		return append(buf, fmt.Sprintf(this.fmtspec, record.Msg)...)
 	}
-	return append(buf, fmt.Sprintf(formatter.fmtspec, record.Msg)...)
 }

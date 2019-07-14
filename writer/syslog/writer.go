@@ -34,24 +34,24 @@ func Open(config Config) (*Writer, error) {
 	return writer, nil
 }
 
-func (writer *Writer) Close() error {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) Close() error {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	if err := writer.log.Close(); err != nil {
+	if err := this.log.Close(); err != nil {
 		return fmt.Errorf("writer/syslog.Close: %v", err)
 	}
 	return nil
 }
 
-func (writer *Writer) Write(bs []byte, record *iface.Record) error {
-	writer.lock.Lock()
+func (this *Writer) Write(bs []byte, record *iface.Record) error {
+	this.lock.Lock()
 
-	severity := writer.severities[record.Level]
-	priority := int(writer.facility) | int(severity)
-	err := writer.log.Write(record.Time, priority, writer.tag, bs)
+	severity := this.severities[record.Level]
+	priority := int(this.facility) | int(severity)
+	err := this.log.Write(record.Time, priority, this.tag, bs)
 
-	writer.lock.Unlock()
+	this.lock.Unlock()
 
 	if err != nil {
 		return fmt.Errorf("writer/syslog.Write: %v", err)
@@ -59,53 +59,53 @@ func (writer *Writer) Write(bs []byte, record *iface.Record) error {
 	return nil
 }
 
-func (writer *Writer) Tag() string {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) Tag() string {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return writer.tag
+	return this.tag
 }
 
-func (writer *Writer) SetTag(tag string) {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) SetTag(tag string) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	writer.tag = tag
+	this.tag = tag
 }
 
-func (writer *Writer) Facility() Facility {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) Facility() Facility {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return writer.facility
+	return this.facility
 }
 
-func (writer *Writer) SetFacility(facility Facility) {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) SetFacility(facility Facility) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	writer.facility = facility
+	this.facility = facility
 }
 
-func (writer *Writer) Severity(level iface.Level) Severity {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) Severity(level iface.Level) Severity {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return writer.severities[level]
+	return this.severities[level]
 }
 
-func (writer *Writer) SetSeverity(level iface.Level, severity Severity) {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) SetSeverity(level iface.Level, severity Severity) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	writer.severities[level] = severity
+	this.severities[level] = severity
 }
 
-func (writer *Writer) MapSeverities(severityMap map[iface.Level]Severity) {
-	writer.lock.Lock()
-	defer writer.lock.Unlock()
+func (this *Writer) MapSeverities(severityMap map[iface.Level]Severity) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
 	for level, severity := range severityMap {
-		writer.severities[level] = severity
+		this.severities[level] = severity
 	}
 }

@@ -29,15 +29,15 @@ func Open(path string) (*Writer, error) {
 	return &Writer{socket: socket}, nil
 }
 
-func (writer *Writer) Close() error {
-	if err := writer.socket.Close(); err != nil {
+func (this *Writer) Close() error {
+	if err := this.socket.Close(); err != nil {
 		return fmt.Errorf("writer/unix.Close: %v", err)
 	}
 	return nil
 }
 
-func (writer *Writer) Write(bs []byte, _ *iface.Record) error {
-	writer.socket.Write(bs)
+func (this *Writer) Write(bs []byte, _ *iface.Record) error {
+	this.socket.Write(bs)
 	return nil
 }
 

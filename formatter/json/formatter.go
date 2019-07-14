@@ -28,78 +28,75 @@ func New(config Config) *Formatter {
 	return formatter
 }
 
-func (formatter *Formatter) Format(record *iface.Record) []byte {
-	formatter.lock.Lock()
+func (this *Formatter) Format(record *iface.Record) []byte {
+	this.lock.Lock()
 
-	buf := formatter.buf[:0]
+	buf := this.buf[:0]
 	buf = append(buf, "{"...)
+
 	buf = formatStrField(buf, "", "Time", record.Time.Format(time.RFC3339Nano), false)
 	buf = formatIntField(buf, ",", "Level", int(record.Level))
-	file := util.LastSegments(record.File, formatter.fileSegs, '/')
+	file := util.LastSegments(record.File, this.fileSegs, '/')
 	buf = formatStrField(buf, ",", "File", file, true)
 	buf = formatIntField(buf, ",", "Line", record.Line)
-	pkg := util.LastSegments(record.Pkg, formatter.pkgSegs, '/')
+	pkg := util.LastSegments(record.Pkg, this.pkgSegs, '/')
 	buf = formatStrField(buf, ",", "Pkg", pkg, false)
-	fn := util.LastSegments(record.Func, formatter.funcSegs, '.')
+	fn := util.LastSegments(record.Func, this.funcSegs, '.')
 	buf = formatStrField(buf, ",", "Func", fn, false)
 	buf = formatStrField(buf, ",", "Msg", record.Msg, true)
-	buf = formatter.formatAux(buf, &record.Aux)
-	buf = append(buf, "}\n"...)
-	formatter.buf = buf
 
-	formatter.lock.Unlock()
+	buf = formatStrField(buf, ",", "Prefix", record.Prefix, true)
+	buf = formatContexts(buf, record.Contexts)
+	buf = formatBoolField(buf, ",", "Mark", record.Mark)
+
+	buf = append(buf, "}\n"...)
+	this.buf = buf
+
+	this.lock.Unlock()
 
 	return buf
 }
 
-func (formatter *Formatter) FileSegs() int {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) FileSegs() int {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return formatter.fileSegs
+	return this.fileSegs
 }
 
-func (formatter *Formatter) SetFileSegs(segs int) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) SetFileSegs(segs int) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.fileSegs = segs
+	this.fileSegs = segs
 }
 
-func (formatter *Formatter) PkgSegs() int {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) PkgSegs() int {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return formatter.pkgSegs
+	return this.pkgSegs
 }
 
-func (formatter *Formatter) SetPkgSegs(segs int) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) SetPkgSegs(segs int) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.pkgSegs = segs
+	this.pkgSegs = segs
 }
 
-func (formatter *Formatter) FuncSegs() int {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) FuncSegs() int {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	return formatter.funcSegs
+	return this.funcSegs
 }
 
-func (formatter *Formatter) SetFuncSegs(segs int) {
-	formatter.lock.Lock()
-	defer formatter.lock.Unlock()
+func (this *Formatter) SetFuncSegs(segs int) {
+	this.lock.Lock()
+	defer this.lock.Unlock()
 
-	formatter.funcSegs = segs
-}
-
-func (formatter *Formatter) formatAux(buf []byte, aux *iface.Auxiliary) []byte {
-	buf = append(buf, `,"Aux":{`...)
-	buf = formatStrField(buf, "", "Prefix", aux.Prefix, true)
-	buf = formatContexts(buf, aux.Contexts)
-	buf = formatBoolField(buf, ",", "Mark", aux.Mark)
-	return append(buf, "}"...)
+	this.funcSegs = segs
 }
 
 func formatContexts(buf []byte, contexts []iface.Context) []byte {
@@ -144,6 +141,7 @@ func formatBoolField(buf []byte, sep, key string, value bool) []byte {
 	buf = append(buf, `":`...)
 	if value {
 		return append(buf, "true"...)
+	} else {
+		return append(buf, "false"...)
 	}
-	return append(buf, "false"...)
 }

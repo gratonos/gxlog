@@ -8,11 +8,11 @@ import (
 var log = gxlog.Logger()
 
 func main() {
-	testAuxiliary()
+	testAdditional()
 	testDynamicContext()
 }
 
-func testAuxiliary() {
+func testAdditional() {
 	log.WithPrefix("**** ").WithMark(true).WithContexts("k1", "v1", "k2", "v2").
 		Info("prefix, mark and contexts")
 	log.Info("no prefix, mark or contexts")

@@ -8,6 +8,6 @@ import (
 // Do NOT call any method of the Logger within the function, or it may deadlock.
 type Func func(bs []byte, record *iface.Record) error
 
-func (fn Func) Write(bs []byte, record *iface.Record) error {
-	return fn(bs, record)
+func (self Func) Write(bs []byte, record *iface.Record) error {
+	return self(bs, record)
 }

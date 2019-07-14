@@ -41,14 +41,14 @@ func testWrappers() {
 
 func testUnixWriter() {
 	// Shell expansion is NOT supported. Thus, ~, $var and so on will NOT be expanded.
-	wt, err := unix.Open("/tmp/gxlog/unixdomain")
+	writer, err := unix.Open("/tmp/gxlog/unixdomain")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer wt.Close()
+	defer writer.Close()
 
-	log.SetSlotWriter(logger.Slot0, wt)
+	log.SetSlotWriter(logger.Slot0, writer)
 
 	// Use "netcat -U /tmp/gxlog/unixdomain" to watch logs.
 	// for i := 0; i < 1024; i++ {
@@ -59,31 +59,31 @@ func testUnixWriter() {
 
 func testFileWriter() {
 	// Shell expansion is NOT supported. Thus, ~, $var and so on will NOT be expanded.
-	wt, err := file.Open(file.Config{Path: "/tmp/gxlog"})
+	writer, err := file.Open(file.Config{Dir: "/tmp/gxlog"})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer wt.Close()
+	defer writer.Close()
 
-	log.SetSlotWriter(logger.Slot0, wt)
+	log.SetSlotWriter(logger.Slot0, writer)
 	log.Info("this will be output to a file")
 }
 
 func testSyslogWriter() {
 	gxlog.Formatter().SetHeader(text.SyslogHeader)
 
-	wt, err := syslog.Open(syslog.Config{Tag: "gxlog", Facility: syslog.FacUser})
+	writer, err := syslog.Open(syslog.Config{Tag: "gxlog", Facility: syslog.FacUser})
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	defer wt.Close()
+	defer writer.Close()
 
-	log.SetSlotWriter(logger.Slot0, wt)
+	log.SetSlotWriter(logger.Slot0, writer)
 	log.Info("this will be output to syslog")
 
-	wt.MapSeverities(map[iface.Level]syslog.Severity{
+	writer.MapSeverities(map[iface.Level]syslog.Severity{
 		iface.Info: syslog.SevErr,
 	})
 	log.Info("this will be severity err")
