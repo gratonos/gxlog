@@ -12,6 +12,12 @@ type ErrorHandler func(bs []byte, record *iface.Record, err error)
 
 const outputDepthOffset = 6
 
+var nullErrorHandler = func([]byte, *iface.Record, error) {}
+
+func NullErrorHandler() ErrorHandler {
+	return nullErrorHandler
+}
+
 func Report(_ []byte, _ *iface.Record, err error) {
 	_ = log.Output(outputDepthOffset, fmt.Sprintln("gxlog error:", err))
 }

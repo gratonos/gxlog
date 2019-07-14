@@ -41,7 +41,11 @@ type Logger struct {
 }
 
 func New(config Config) *Logger {
+	config.SetDefaults()
 	return &Logger{
+		additional: additional{
+			Filter: nullFilter,
+		},
 		config:      &config,
 		slots:       initSlots(),
 		equivalents: make([][]int, MaxSlot),
@@ -74,6 +78,9 @@ func (this *Logger) SetFilter(filter Filter) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
+	if filter == nil {
+		filter = nullFilter
+	}
 	this.config.Filter = filter
 }
 
@@ -204,6 +211,14 @@ func (this *Logger) doneFunc(level iface.Level, msg string) func() {
 func (this *Logger) log(callDepth int, level iface.Level, msg string) {
 	file, line, pkg, fn := getPosInfo(callDepth + callDepthOffset)
 
+	contexts := this.additional.Statics
+	for _, context := range this.additional.Dynamics {
+		contexts = append(contexts, iface.Context{
+			Key:   fmt.Sprint(context.Key),
+			Value: fmt.Sprint(context.Value(context.Key)),
+		})
+	}
+
 	this.lock.Lock()
 
 	record := &iface.Record{
@@ -215,48 +230,36 @@ func (this *Logger) log(callDepth int, level iface.Level, msg string) {
 		Func:     fn,
 		Msg:      msg,
 		Prefix:   this.additional.Prefix,
-		Contexts: this.additional.Statics,
+		Contexts: contexts,
 		Mark:     this.additional.Mark,
 	}
-	for _, context := range this.additional.Dynamics {
-		record.Contexts = append(record.Contexts, iface.Context{
-			Key:   fmt.Sprint(context.Key),
-			Value: fmt.Sprint(context.Value(context.Key)),
-		})
-	}
 
-	this.formatAndWrite(level, record)
+	if this.additional.Filter(record) && this.config.Filter(record) {
+		this.formatAndWrite(level, record)
+	}
 
 	this.lock.Unlock()
 }
 
 func (this *Logger) formatAndWrite(level iface.Level, record *iface.Record) {
-	if (this.additional.Filter != nil && !this.additional.Filter(record)) ||
-		(this.config.Filter != nil && !this.config.Filter(record)) {
-		return
-	}
-
 	var formats [MaxSlot][]byte
 	for i := 0; i < MaxSlot; i++ {
 		slot := &this.slots[i]
-		if slot.Level > level {
+		if slot.Level > level || !slot.Filter(record) {
 			continue
 		}
-		if slot.Filter != nil && !slot.Filter(record) {
-			continue
-		}
+
 		format := formats[i]
-		if format == nil && slot.Formatter != nil {
+		if format == nil {
 			format = slot.Formatter.Format(record)
 			for _, id := range this.equivalents[i] {
 				formats[id] = format
 			}
 		}
-		if slot.Writer != nil {
-			err := slot.Writer.Write(format, record)
-			if err != nil && slot.ErrorHandler != nil {
-				slot.ErrorHandler(format, record, err)
-			}
+
+		err := slot.Writer.Write(format, record)
+		if err != nil {
+			slot.ErrorHandler(format, record, err)
 		}
 	}
 }

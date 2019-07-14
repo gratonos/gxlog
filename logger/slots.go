@@ -3,7 +3,9 @@ package logger
 import (
 	"reflect"
 
+	"github.com/gratonos/gxlog/formatter"
 	"github.com/gratonos/gxlog/iface"
+	"github.com/gratonos/gxlog/writer"
 )
 
 type SlotIndex int
@@ -30,7 +32,11 @@ type Slot struct {
 }
 
 var nullSlot = Slot{
-	Level: iface.Off,
+	Formatter:    formatter.Null(),
+	Writer:       writer.Null(),
+	Level:        iface.Off,
+	Filter:       nullFilter,
+	ErrorHandler: nullErrorHandler,
 }
 
 func (this *Logger) Slot(index SlotIndex) Slot {
@@ -44,7 +50,7 @@ func (this *Logger) SetSlot(index SlotIndex, slot Slot) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
-	this.slots[index] = slot
+	this.slots[index] = fillSlot(slot)
 	this.updateEquivalents()
 }
 
@@ -52,7 +58,7 @@ func (this *Logger) UpdateSlot(index SlotIndex, fn func(Slot) Slot) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
-	this.slots[index] = fn(this.slots[index])
+	this.slots[index] = fillSlot(fn(this.slots[index]))
 	this.updateEquivalents()
 }
 
@@ -110,6 +116,9 @@ func (this *Logger) SetSlotFormatter(index SlotIndex, formatter iface.Formatter)
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
+	if formatter == nil {
+		formatter = nullSlot.Formatter
+	}
 	this.slots[index].Formatter = formatter
 	this.updateEquivalents()
 }
@@ -125,6 +134,9 @@ func (this *Logger) SetSlotWriter(index SlotIndex, writer iface.Writer) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
+	if writer == nil {
+		writer = nullSlot.Writer
+	}
 	this.slots[index].Writer = writer
 }
 
@@ -153,6 +165,9 @@ func (this *Logger) SetSlotFilter(index SlotIndex, filter Filter) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
+	if filter == nil {
+		filter = nullSlot.Filter
+	}
 	this.slots[index].Filter = filter
 }
 
@@ -167,23 +182,22 @@ func (this *Logger) SetSlotErrorHandler(index SlotIndex, handler ErrorHandler) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
+	if handler == nil {
+		handler = nullSlot.ErrorHandler
+	}
 	this.slots[index].ErrorHandler = handler
 }
 
 func (this *Logger) updateEquivalents() {
 	for i := 0; i < MaxSlot; i++ {
 		this.equivalents[i] = this.equivalents[i][:0]
-		if this.slots[i].Formatter == nil ||
-			!reflect.TypeOf(this.slots[i].Formatter).Comparable() {
-			continue
-		}
-		for j := i + 1; j < MaxSlot; j++ {
-			if this.slots[j].Formatter == nil ||
-				!reflect.TypeOf(this.slots[j].Formatter).Comparable() ||
-				this.slots[i].Formatter != this.slots[j].Formatter {
-				continue
+		if reflect.TypeOf(this.slots[i].Formatter).Comparable() {
+			for j := i + 1; j < MaxSlot; j++ {
+				if reflect.TypeOf(this.slots[j].Formatter).Comparable() &&
+					this.slots[i].Formatter == this.slots[j].Formatter {
+					this.equivalents[i] = append(this.equivalents[i], j)
+				}
 			}
-			this.equivalents[i] = append(this.equivalents[i], j)
 		}
 	}
 }
@@ -194,4 +208,20 @@ func initSlots() []Slot {
 		slots[i] = nullSlot
 	}
 	return slots
+}
+
+func fillSlot(slot Slot) Slot {
+	if slot.Formatter == nil {
+		slot.Formatter = formatter.Null()
+	}
+	if slot.Writer == nil {
+		slot.Writer = writer.Null()
+	}
+	if slot.Filter == nil {
+		slot.Filter = nullFilter
+	}
+	if slot.ErrorHandler == nil {
+		slot.ErrorHandler = nullErrorHandler
+	}
+	return slot
 }

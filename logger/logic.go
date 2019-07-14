@@ -5,9 +5,11 @@ import (
 )
 
 func And(filters ...Filter) Filter {
+	fillFilters(filters)
+
 	return func(record *iface.Record) bool {
 		for _, filter := range filters {
-			if filter != nil && !filter(record) {
+			if !filter(record) {
 				return false
 			}
 		}
@@ -16,9 +18,11 @@ func And(filters ...Filter) Filter {
 }
 
 func Or(filters ...Filter) Filter {
+	fillFilters(filters)
+
 	return func(record *iface.Record) bool {
 		for _, filter := range filters {
-			if filter == nil || filter(record) {
+			if filter(record) {
 				return true
 			}
 		}
@@ -28,11 +32,17 @@ func Or(filters ...Filter) Filter {
 
 func Not(filter Filter) Filter {
 	if filter == nil {
-		return func(*iface.Record) bool {
-			return false
-		}
+		filter = nullFilter
 	}
 	return func(record *iface.Record) bool {
 		return !filter(record)
+	}
+}
+
+func fillFilters(filters []Filter) {
+	for i, filter := range filters {
+		if filter == nil {
+			filters[i] = nullFilter
+		}
 	}
 }

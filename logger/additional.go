@@ -20,6 +20,9 @@ func (self Logger) WithLevel(level iface.Level) *Logger {
 }
 
 func (self Logger) WithFilter(filter Filter) *Logger {
+	if filter == nil {
+		filter = nullFilter
+	}
 	self.additional.Filter = filter
 	return &self
 }
