@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	gos "github.com/gratonos/goutil/os"
 	"github.com/gratonos/gxlog/iface"
 )
 
@@ -124,15 +125,15 @@ func (this *Writer) checkFile(record *iface.Record) error {
 		return this.createFile(record)
 	} else if time.Since(this.checkTime) >= checkInterval {
 		this.checkTime = time.Now()
-		_, err := os.Stat(this.path)
-		if os.IsNotExist(err) {
-			return this.createFile(record)
-		} else {
+		ok, err := gos.FileExists(this.path)
+		if err != nil {
 			return err
 		}
-	} else {
-		return nil
+		if !ok {
+			return this.createFile(record)
+		}
 	}
+	return nil
 }
 
 func (this *Writer) createFile(record *iface.Record) error {

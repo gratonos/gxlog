@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	gos "github.com/gratonos/goutil/os"
 	"github.com/gratonos/gxlog/iface"
 )
 
@@ -19,7 +20,7 @@ func Open(path string) (*Writer, error) {
 	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return nil, openError(err)
 	}
-	if err := checkAndRemove(path); err != nil {
+	if err := gos.RemoveIfExists(path); err != nil {
 		return nil, openError(err)
 	}
 	socket, err := openSocket(path)
@@ -39,13 +40,6 @@ func (this *Writer) Close() error {
 func (this *Writer) Write(bs []byte, _ *iface.Record) error {
 	this.socket.Write(bs)
 	return nil
-}
-
-func checkAndRemove(path string) error {
-	if _, err := os.Stat(path); err != nil {
-		return nil
-	}
-	return os.Remove(path)
 }
 
 func openError(err error) error {
