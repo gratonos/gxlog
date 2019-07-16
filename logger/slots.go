@@ -116,10 +116,7 @@ func (this *Logger) SetSlotFormatter(index SlotIndex, formatter iface.Formatter)
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
-	if formatter == nil {
-		formatter = nullSlot.Formatter
-	}
-	this.slots[index].Formatter = formatter
+	this.slots[index].Formatter = fillFormatter(formatter)
 	this.updateEquivalents()
 }
 
@@ -134,10 +131,7 @@ func (this *Logger) SetSlotWriter(index SlotIndex, writer iface.Writer) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
-	if writer == nil {
-		writer = nullSlot.Writer
-	}
-	this.slots[index].Writer = writer
+	this.slots[index].Writer = fillWriter(writer)
 }
 
 func (this *Logger) SlotLevel(index SlotIndex) iface.Level {
@@ -165,10 +159,7 @@ func (this *Logger) SetSlotFilter(index SlotIndex, filter Filter) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
-	if filter == nil {
-		filter = nullSlot.Filter
-	}
-	this.slots[index].Filter = filter
+	this.slots[index].Filter = fillFilter(filter)
 }
 
 func (this *Logger) SlotErrorHandler(index SlotIndex) ErrorHandler {
@@ -182,10 +173,7 @@ func (this *Logger) SetSlotErrorHandler(index SlotIndex, handler ErrorHandler) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
-	if handler == nil {
-		handler = nullSlot.ErrorHandler
-	}
-	this.slots[index].ErrorHandler = handler
+	this.slots[index].ErrorHandler = fillErrorHandler(handler)
 }
 
 func (this *Logger) updateEquivalents() {
@@ -211,17 +199,23 @@ func initSlots() []Slot {
 }
 
 func fillSlot(slot Slot) Slot {
-	if slot.Formatter == nil {
-		slot.Formatter = formatter.Null()
-	}
-	if slot.Writer == nil {
-		slot.Writer = writer.Null()
-	}
-	if slot.Filter == nil {
-		slot.Filter = nullFilter
-	}
-	if slot.ErrorHandler == nil {
-		slot.ErrorHandler = nullErrorHandler
-	}
+	slot.Formatter = fillFormatter(slot.Formatter)
+	slot.Writer = fillWriter(slot.Writer)
+	slot.Filter = fillFilter(slot.Filter)
+	slot.ErrorHandler = fillErrorHandler(slot.ErrorHandler)
 	return slot
+}
+
+func fillFormatter(formatter iface.Formatter) iface.Formatter {
+	if formatter == nil {
+		formatter = nullSlot.Formatter
+	}
+	return formatter
+}
+
+func fillWriter(writer iface.Writer) iface.Writer {
+	if writer == nil {
+		writer = nullSlot.Writer
+	}
+	return writer
 }

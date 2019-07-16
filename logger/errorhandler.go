@@ -25,3 +25,10 @@ func Report(_ []byte, _ *iface.Record, err error) {
 func ReportDetails(bs []byte, _ *iface.Record, err error) {
 	_ = log.Output(outputDepthOffset, fmt.Sprintf("gxlog error: %v, log: %s", err, bs))
 }
+
+func fillErrorHandler(handler ErrorHandler) ErrorHandler {
+	if handler == nil {
+		handler = nullErrorHandler
+	}
+	return handler
+}

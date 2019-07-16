@@ -10,7 +10,5 @@ type Config struct {
 }
 
 func (this *Config) SetDefaults() {
-	if this.Filter == nil {
-		this.Filter = nullFilter
-	}
+	this.Filter = fillFilter(this.Filter)
 }

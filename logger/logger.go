@@ -78,10 +78,7 @@ func (this *Logger) SetFilter(filter Filter) {
 	this.lock.Lock()
 	defer this.lock.Unlock()
 
-	if filter == nil {
-		filter = nullFilter
-	}
-	this.config.Filter = filter
+	this.config.Filter = fillFilter(filter)
 }
 
 func (this *Logger) Trace(args ...interface{}) {

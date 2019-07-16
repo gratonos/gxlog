@@ -31,18 +31,9 @@ func Or(filters ...Filter) Filter {
 }
 
 func Not(filter Filter) Filter {
-	if filter == nil {
-		filter = nullFilter
-	}
+	filter = fillFilter(filter)
+
 	return func(record *iface.Record) bool {
 		return !filter(record)
-	}
-}
-
-func fillFilters(filters []Filter) {
-	for i, filter := range filters {
-		if filter == nil {
-			filters[i] = nullFilter
-		}
 	}
 }

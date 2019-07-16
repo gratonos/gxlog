@@ -12,3 +12,16 @@ var nullFilter = func(*iface.Record) bool { return true }
 func NullFilter() Filter {
 	return nullFilter
 }
+
+func fillFilter(filter Filter) Filter {
+	if filter == nil {
+		filter = nullFilter
+	}
+	return filter
+}
+
+func fillFilters(filters []Filter) {
+	for i, filter := range filters {
+		filters[i] = fillFilter(filter)
+	}
+}
