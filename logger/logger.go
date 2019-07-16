@@ -270,7 +270,7 @@ func splitPkgAndFunc(name string) (string, string) {
 	lastSlash := strings.LastIndexByte(name, '/')
 	nextDot := strings.IndexByte(name[lastSlash+1:], '.')
 	if nextDot < 0 {
-		return "?pkg?", "?func?"
+		return "???", "???"
 	}
 	nextDot += (lastSlash + 1)
 	return name[:nextDot], name[nextDot+1:]
