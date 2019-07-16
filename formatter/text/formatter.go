@@ -9,6 +9,7 @@ import (
 	"github.com/gratonos/gxlog/iface"
 )
 
+// {{<name>[:property][%fmtstr]}}
 var headerRegexp = regexp.MustCompile("{{([^:%]*?)(?::([^%]*?))?(%.*?)?}}")
 
 type Formatter struct {
@@ -47,6 +48,11 @@ func (this *Formatter) SetHeader(header string) {
 	this.appenders = this.appenders[:0]
 	var staticText string
 	for header != "" {
+		// {{name:property%fmtstr}}
+		// 0<--------------------->1
+		//   2<->3
+		//        4<----->5
+		//                6<---->7
 		indexes := headerRegexp.FindStringSubmatchIndex(header)
 		if indexes == nil {
 			break
