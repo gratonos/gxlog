@@ -258,10 +258,10 @@ func getPosInfo(callDepth int) (file string, line int, pkg, fn string) {
 		name := runtime.FuncForPC(pc).Name()
 		pkg, fn = splitPkgAndFunc(name)
 	} else {
-		file = "?file?"
-		line = -1
-		pkg = "?pkg?"
-		fn = "?func?"
+		file = "???"
+		line = 0
+		pkg = "???"
+		fn = "???"
 	}
 	return filepath.ToSlash(file), line, pkg, fn
 }
