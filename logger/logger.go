@@ -9,6 +9,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gratonos/gxlog/iface"
@@ -54,17 +55,11 @@ func New(config Config) *Logger {
 }
 
 func (this *Logger) Level() iface.Level {
-	this.lock.Lock()
-	defer this.lock.Unlock()
-
-	return this.config.Level
+	return iface.Level(atomic.LoadInt32((*int32)(&this.config.Level)))
 }
 
 func (this *Logger) SetLevel(level iface.Level) {
-	this.lock.Lock()
-	defer this.lock.Unlock()
-
-	this.config.Level = level
+	atomic.StoreInt32((*int32)(&this.config.Level), int32(level))
 }
 
 func (this *Logger) Filter() Filter {
@@ -183,18 +178,12 @@ func (this *Logger) Timingf(level iface.Level, fmtstr string, args ...interface{
 	}
 }
 
-func (this *Logger) needToLog(level iface.Level) (need bool) {
+func (this *Logger) needToLog(level iface.Level) bool {
 	if level < iface.Trace || level > iface.Fatal {
 		panic(fmt.Sprintf("gxlog: invalid log level: %d", level))
 	}
 
-	this.lock.Lock()
-	if this.additional.Level <= level && this.config.Level <= level {
-		need = true
-	}
-	this.lock.Unlock()
-
-	return need
+	return this.additional.Level <= level && this.Level() <= level
 }
 
 func (this *Logger) doneFunc(level iface.Level, msg string) func() {

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Level int
+type Level int32
 
 const (
 	Trace Level = iota
