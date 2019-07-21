@@ -19,15 +19,6 @@ const (
 	callDepthOffset = 3
 )
 
-type additional struct {
-	Level    iface.Level
-	Filter   Filter
-	Prefix   string
-	Statics  []iface.Context
-	Dynamics []dynamicContext
-	Mark     bool
-}
-
 // A Logger is a logging framework that contains EIGHT slots. Each Slot contains
 // a Formatter and a Writer. A Logger has its own level and filter while each
 // Slot has its independent level and filter. Logger calls the Formatter and
@@ -200,8 +191,8 @@ func (this *Logger) log(callDepth int, level iface.Level, msg string) {
 	contexts := this.additional.Statics
 	for _, context := range this.additional.Dynamics {
 		contexts = append(contexts, iface.Context{
-			Key:   fmt.Sprint(context.Key),
-			Value: fmt.Sprint(context.Value(context.Key)),
+			Key:   context.Key,
+			Value: fmt.Sprint(context.Value()),
 		})
 	}
 
