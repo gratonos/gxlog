@@ -28,7 +28,7 @@ type Logger struct {
 
 	config      *Config
 	slots       []Slot
-	equivalents [][]int // indexes of equivalent formatters
+	equivalents [][]int // indexes of equivalent formatters, used to avoid duplicated formatting
 	lock        *sync.Mutex
 }
 
@@ -219,24 +219,24 @@ func (this *Logger) log(callDepth int, level iface.Level, msg string) {
 }
 
 func (this *Logger) formatAndWrite(level iface.Level, record *iface.Record) {
-	var formats [MaxSlot][]byte
+	var logs [MaxSlot][]byte
 	for i := 0; i < MaxSlot; i++ {
 		slot := &this.slots[i]
 		if slot.Level > level || !slot.Filter(record) {
 			continue
 		}
 
-		format := formats[i]
-		if format == nil {
-			format = slot.Formatter.Format(record)
+		log := logs[i]
+		if log == nil {
+			log = slot.Formatter.Format(record)
 			for _, id := range this.equivalents[i] {
-				formats[id] = format
+				logs[id] = log
 			}
 		}
 
-		err := slot.Writer.Write(format, record)
+		err := slot.Writer.Write(log, record)
 		if err != nil {
-			slot.ErrorHandler(format, record, err)
+			slot.ErrorHandler(log, record, err)
 		}
 	}
 }
