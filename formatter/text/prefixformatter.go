@@ -7,20 +7,20 @@ import (
 )
 
 type prefixFormatter struct {
-	fmtspec string
+	fmtstr string
 }
 
-func newPrefixFormatter(_, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newPrefixFormatter(_, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
-	return &prefixFormatter{fmtspec: fmtspec}
+	return &prefixFormatter{fmtstr: fmtstr}
 }
 
 func (this *prefixFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if this.fmtspec == "%s" {
+	if this.fmtstr == "%s" {
 		return append(buf, record.Prefix...)
 	} else {
-		return append(buf, fmt.Sprintf(this.fmtspec, record.Prefix)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, record.Prefix)...)
 	}
 }

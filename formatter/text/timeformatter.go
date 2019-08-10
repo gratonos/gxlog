@@ -17,26 +17,26 @@ const (
 )
 
 type timeFormatter struct {
-	layout  string
-	fmtspec string
+	layout string
+	fmtstr string
 }
 
-func newTimeFormatter(property, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newTimeFormatter(property, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
 	return &timeFormatter{
-		layout:  makeTimeLayout(property),
-		fmtspec: fmtspec,
+		layout: makeTimeLayout(property),
+		fmtstr: fmtstr,
 	}
 }
 
 func (this *timeFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if this.fmtspec == "%s" {
+	if this.fmtstr == "%s" {
 		return record.Time.AppendFormat(buf, this.layout)
 	}
 	timeStr := record.Time.Format(this.layout)
-	return append(buf, fmt.Sprintf(this.fmtspec, timeStr)...)
+	return append(buf, fmt.Sprintf(this.fmtstr, timeStr)...)
 }
 
 func makeTimeLayout(property string) string {
@@ -45,7 +45,7 @@ func makeTimeLayout(property string) string {
 	}
 
 	var layout string
-	timeType, decimalType := getTimeOptions(property)
+	timeType, fractionType := getTimeOptions(property)
 	switch timeType {
 	case "date":
 		layout = dateLayout + " " + timeLayout
@@ -54,7 +54,7 @@ func makeTimeLayout(property string) string {
 	default:
 		return defaultLayout
 	}
-	switch decimalType {
+	switch fractionType {
 	case "ms":
 		layout += milliLayout
 	case "us":

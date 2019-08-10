@@ -10,25 +10,25 @@ import (
 
 type funcFormatter struct {
 	segments int
-	fmtspec  string
+	fmtstr  string
 }
 
-func newFuncFormatter(property, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newFuncFormatter(property, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
 	segments, _ := strconv.Atoi(property)
 	return &funcFormatter{
 		segments: segments,
-		fmtspec:  fmtspec,
+		fmtstr:  fmtstr,
 	}
 }
 
 func (this *funcFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
 	fn := util.LastSegments(record.Func, this.segments, '.')
-	if this.fmtspec == "%s" {
+	if this.fmtstr == "%s" {
 		return append(buf, fn...)
 	} else {
-		return append(buf, fmt.Sprintf(this.fmtspec, fn)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, fn)...)
 	}
 }

@@ -10,25 +10,25 @@ import (
 
 type pkgFormatter struct {
 	segments int
-	fmtspec  string
+	fmtstr  string
 }
 
-func newPkgFormatter(property, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newPkgFormatter(property, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
 	segments, _ := strconv.Atoi(property)
 	return &pkgFormatter{
 		segments: segments,
-		fmtspec:  fmtspec,
+		fmtstr:  fmtstr,
 	}
 }
 
 func (this *pkgFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
 	pkg := util.LastSegments(record.Pkg, this.segments, '/')
-	if this.fmtspec == "%s" {
+	if this.fmtstr == "%s" {
 		return append(buf, pkg...)
 	} else {
-		return append(buf, fmt.Sprintf(this.fmtspec, pkg)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, pkg)...)
 	}
 }

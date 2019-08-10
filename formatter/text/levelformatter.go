@@ -7,7 +7,7 @@ import (
 	"github.com/gratonos/gxlog/iface"
 )
 
-var levelDesc = []string{
+var levelNames = []string{
 	iface.Trace: "TRACE",
 	iface.Debug: "DEBUG",
 	iface.Info:  "INFO ",
@@ -16,7 +16,7 @@ var levelDesc = []string{
 	iface.Fatal: "FATAL",
 }
 
-var levelDescChar = []string{
+var levelCharNames = []string{
 	iface.Trace: "T",
 	iface.Debug: "D",
 	iface.Info:  "I",
@@ -26,33 +26,33 @@ var levelDescChar = []string{
 }
 
 type levelFormatter struct {
-	descList []string
-	fmtspec  string
+	nameList []string
+	fmtstr   string
 }
 
-func newLevelFormatter(property, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newLevelFormatter(property, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
 	return &levelFormatter{
-		descList: selectDescList(property),
-		fmtspec:  fmtspec,
+		nameList: selectNameList(property),
+		fmtstr:   fmtstr,
 	}
 }
 
 func (this *levelFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	desc := this.descList[record.Level]
-	if this.fmtspec == "%s" {
-		return append(buf, desc...)
+	name := this.nameList[record.Level]
+	if this.fmtstr == "%s" {
+		return append(buf, name...)
 	} else {
-		return append(buf, fmt.Sprintf(this.fmtspec, desc)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, name)...)
 	}
 }
 
-func selectDescList(property string) []string {
+func selectNameList(property string) []string {
 	if strings.ToLower(property) == "char" {
-		return levelDescChar
+		return levelCharNames
 	} else {
-		return levelDesc
+		return levelNames
 	}
 }

@@ -7,20 +7,20 @@ import (
 )
 
 type msgFormatter struct {
-	fmtspec string
+	fmtstr string
 }
 
-func newMsgFormatter(_, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newMsgFormatter(_, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
-	return &msgFormatter{fmtspec: fmtspec}
+	return &msgFormatter{fmtstr: fmtstr}
 }
 
 func (this *msgFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if this.fmtspec == "%s" {
+	if this.fmtstr == "%s" {
 		return append(buf, record.Msg...)
 	} else {
-		return append(buf, fmt.Sprintf(this.fmtspec, record.Msg)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, record.Msg)...)
 	}
 }

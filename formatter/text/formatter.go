@@ -59,8 +59,8 @@ func (this *Formatter) SetHeader(header string) {
 		}
 		begin, end := indexes[0], indexes[1]
 		staticText += header[:begin]
-		element, property, fmtspec := extractElement(header, indexes)
-		if this.addAppender(element, property, fmtspec, staticText) {
+		element, property, fmtstr := extractElement(header, indexes)
+		if this.addAppender(element, property, fmtstr, staticText) {
 			staticText = ""
 		}
 		header = header[end:]
@@ -142,8 +142,8 @@ func (this *Formatter) Format(record *iface.Record) []byte {
 	return buf
 }
 
-func (this *Formatter) addAppender(element, property, fmtspec, staticText string) bool {
-	appender := newHeaderAppender(element, property, fmtspec, staticText)
+func (this *Formatter) addAppender(element, property, fmtstr, staticText string) bool {
+	appender := newHeaderAppender(element, property, fmtstr, staticText)
 	if appender == nil {
 		return false
 	}
@@ -151,14 +151,14 @@ func (this *Formatter) addAppender(element, property, fmtspec, staticText string
 	return true
 }
 
-func extractElement(header string, indexes []int) (element, property, fmtspec string) {
+func extractElement(header string, indexes []int) (element, property, fmtstr string) {
 	element = strings.ToLower(getField(header, indexes[2], indexes[3]))
 	property = getField(header, indexes[4], indexes[5])
-	fmtspec = getField(header, indexes[6], indexes[7])
-	if fmtspec == "%" {
-		fmtspec = ""
+	fmtstr = getField(header, indexes[6], indexes[7])
+	if fmtstr == "%" {
+		fmtstr = ""
 	}
-	return element, property, fmtspec
+	return element, property, fmtstr
 }
 
 func getField(header string, begin, end int) string {

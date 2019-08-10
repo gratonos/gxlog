@@ -17,7 +17,7 @@ const (
 	Off
 )
 
-const LevelCount = Off - Trace
+const LogLevelCount = Off - Trace
 
 type Context struct {
 	Key   string

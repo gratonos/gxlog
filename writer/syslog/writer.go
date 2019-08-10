@@ -12,7 +12,7 @@ type Writer struct {
 	tag      string
 	facility Facility
 
-	severities [iface.LevelCount]Severity
+	severities [iface.LogLevelCount]Severity
 	log        *syslog
 	lock       sync.Mutex
 }

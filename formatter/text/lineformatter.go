@@ -8,20 +8,20 @@ import (
 )
 
 type lineFormatter struct {
-	fmtspec string
+	fmtstr string
 }
 
-func newLineFormatter(_, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%d"
+func newLineFormatter(_, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%d"
 	}
-	return &lineFormatter{fmtspec: fmtspec}
+	return &lineFormatter{fmtstr: fmtstr}
 }
 
 func (this *lineFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if this.fmtspec == "%d" {
+	if this.fmtstr == "%d" {
 		return strconv.AppendInt(buf, int64(record.Line), 10)
 	} else {
-		return append(buf, fmt.Sprintf(this.fmtspec, record.Line)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, record.Line)...)
 	}
 }

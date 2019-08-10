@@ -10,25 +10,25 @@ import (
 
 type fileFormatter struct {
 	segments int
-	fmtspec  string
+	fmtstr  string
 }
 
-func newFileFormatter(property, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newFileFormatter(property, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
 	segments, _ := strconv.Atoi(property)
 	return &fileFormatter{
 		segments: segments,
-		fmtspec:  fmtspec,
+		fmtstr:  fmtstr,
 	}
 }
 
 func (this *fileFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
 	file := util.LastSegments(record.File, this.segments, '/')
-	if this.fmtspec == "%s" {
+	if this.fmtstr == "%s" {
 		return append(buf, file...)
 	} else {
-		return append(buf, fmt.Sprintf(this.fmtspec, file)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, file)...)
 	}
 }

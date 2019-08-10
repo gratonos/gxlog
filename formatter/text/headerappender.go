@@ -8,7 +8,7 @@ type elementFormatter interface {
 	FormatElement(buf []byte, record *iface.Record) []byte
 }
 
-var newFormatterFuncMap = map[string]func(property, fmtspec string) elementFormatter{
+var newFormatterFuncMap = map[string]func(property, fmtstr string) elementFormatter{
 	"time":    newTimeFormatter,
 	"level":   newLevelFormatter,
 	"file":    newFileFormatter,
@@ -25,13 +25,13 @@ type headerAppender struct {
 	staticText string
 }
 
-func newHeaderAppender(element, property, fmtspec, staticText string) *headerAppender {
+func newHeaderAppender(element, property, fmtstr, staticText string) *headerAppender {
 	newFunc := newFormatterFuncMap[element]
 	if newFunc == nil {
 		return nil
 	}
 	return &headerAppender{
-		formatter:  newFunc(property, fmtspec),
+		formatter:  newFunc(property, fmtstr),
 		staticText: staticText,
 	}
 }

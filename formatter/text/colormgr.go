@@ -9,10 +9,10 @@ import (
 const escSeqFmt = "\033[%dm"
 
 type colorMgr struct {
-	colors    [iface.LevelCount]Color
+	colors    [iface.LogLevelCount]Color
 	markColor Color
 
-	colorSeqs    [iface.LevelCount][]byte
+	colorSeqs    [iface.LogLevelCount][]byte
 	markColorSeq []byte
 	resetSeq     []byte
 }

@@ -9,27 +9,27 @@ import (
 
 type contextFormatter struct {
 	formatter func([]byte, []iface.Context) []byte
-	fmtspec   string
+	fmtstr   string
 	buf       []byte
 }
 
-func newContextFormatter(property, fmtspec string) elementFormatter {
-	if fmtspec == "" {
-		fmtspec = "%s"
+func newContextFormatter(property, fmtstr string) elementFormatter {
+	if fmtstr == "" {
+		fmtstr = "%s"
 	}
 	return &contextFormatter{
 		formatter: selectFormatter(property),
-		fmtspec:   fmtspec,
+		fmtstr:   fmtstr,
 	}
 }
 
 func (this *contextFormatter) FormatElement(buf []byte, record *iface.Record) []byte {
-	if this.fmtspec == "%s" {
+	if this.fmtstr == "%s" {
 		return this.formatter(buf, record.Contexts)
 	} else {
 		this.buf = this.buf[:0]
 		this.buf = this.formatter(this.buf, record.Contexts)
-		return append(buf, fmt.Sprintf(this.fmtspec, this.buf)...)
+		return append(buf, fmt.Sprintf(this.fmtstr, this.buf)...)
 	}
 }
 
