@@ -9,6 +9,8 @@ type Color int
 const (
 	FullHeader = "{{time}} {{level}} {{file}}:{{line}} {{pkg}}.{{func}} " +
 		"{{prefix}}[{{context}}] {{msg}}\n"
+	StdHeader = "{{time}} {{level}} {{file:1}}:{{line}} {{pkg}}.{{func}} " +
+		"{{prefix}}[{{context}}] {{msg}}\n"
 	CompactHeader = "{{time:time.us}} {{level}} {{file:1}}:{{line}} " +
 		"{{pkg}}.{{func}} {{prefix}}[{{context}}] {{msg}}\n"
 	SyslogHeader = "{{file:1}}:{{line}} {{pkg}}.{{func}} {{prefix}}[{{context}}] {{msg}}\n"
@@ -56,7 +58,7 @@ type Config struct {
 
 func (this *Config) SetDefaults() {
 	if this.Header == "" {
-		this.Header = CompactHeader
+		this.Header = StdHeader
 	}
 
 	colorMap := map[iface.Level]Color{

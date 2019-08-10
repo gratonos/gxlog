@@ -15,7 +15,7 @@ const (
 	tmplLayout      = "2006-01-02 15:04:05.000000000"
 	tmplDate        = "2018-08-01"
 	tmplTime        = "07:12:07"
-	tmplDecimal     = "235605270"
+	tmplFraction    = "235605270"
 	tmplLevel       = iface.Info
 	tmplFile        = "/home/test/data/src/go/workspace/src/github.com/gratonos/gxlog/logger.go"
 	tmplLine        = 64
@@ -32,7 +32,7 @@ var tmplTimestamp time.Time
 func init() {
 	var err error
 	tmplTimestamp, err = time.ParseInLocation(tmplLayout,
-		tmplDate+" "+tmplTime+"."+tmplDecimal, time.Local)
+		tmplDate+" "+tmplTime+"."+tmplFraction, time.Local)
 	if err != nil {
 		panic(err)
 	}
@@ -41,15 +41,23 @@ func init() {
 func TestFullHeader(t *testing.T) {
 	formatter := text.New(text.Config{Header: text.FullHeader})
 	expect := fmt.Sprintf("%s %s.%s %s %s:%d %s.%s %s[%s] %s\n",
-		tmplDate, tmplTime, tmplDecimal[:6], "INFO ", tmplFile, tmplLine,
+		tmplDate, tmplTime, tmplFraction[:6], "INFO ", tmplFile, tmplLine,
 		tmplPkg, tmplFunc, tmplPrefix, tmplContextPair, tmplMsg)
+	testFormat(t, formatter, tmplRecord(), expect)
+}
+
+func TestStdHeader(t *testing.T) {
+	formatter := text.New(text.Config{Header: text.StdHeader})
+	expect := fmt.Sprintf("%s %s.%s %s %s:%d %s.%s %s[%s] %s\n",
+		tmplDate, tmplTime, tmplFraction[:6], "INFO ", filepath.Base(tmplFile),
+		tmplLine, tmplPkg, tmplFunc, tmplPrefix, tmplContextPair, tmplMsg)
 	testFormat(t, formatter, tmplRecord(), expect)
 }
 
 func TestCompactHeader(t *testing.T) {
 	formatter := text.New(text.Config{Header: text.CompactHeader})
 	expect := fmt.Sprintf("%s.%s %s %s:%d %s.%s %s[%s] %s\n",
-		tmplTime, tmplDecimal[:6], "INFO ", filepath.Base(tmplFile), tmplLine,
+		tmplTime, tmplFraction[:6], "INFO ", filepath.Base(tmplFile), tmplLine,
 		tmplPkg, tmplFunc, tmplPrefix, tmplContextPair, tmplMsg)
 	testFormat(t, formatter, tmplRecord(), expect)
 }
@@ -67,7 +75,7 @@ func TestCustomHeader(t *testing.T) {
 		"{{pkg:1}}.{{func}} {{prefix}}[{{context:list}}] {{msg%20s}}\n"
 	formatter := text.New(text.Config{Header: header})
 	expect := fmt.Sprintf("%s.%s %s %s:%05d %s.%s %s[%s] %20s\n",
-		tmplTime, tmplDecimal, "I", tmplFile, tmplLine, path.Base(tmplPkg),
+		tmplTime, tmplFraction, "I", tmplFile, tmplLine, path.Base(tmplPkg),
 		tmplFunc, tmplPrefix, tmplContextList, tmplMsg)
 	testFormat(t, formatter, tmplRecord(), expect)
 }
