@@ -1,4 +1,4 @@
-package unix
+package usock
 
 import (
 	"net"

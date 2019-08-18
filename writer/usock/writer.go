@@ -1,5 +1,5 @@
-// Package unix implements a unix domain socket writer.
-package unix
+// Package usock implements a unix domain socket writer.
+package usock
 
 import (
 	"fmt"
@@ -32,7 +32,7 @@ func Open(path string) (*Writer, error) {
 
 func (this *Writer) Close() error {
 	if err := this.socket.Close(); err != nil {
-		return fmt.Errorf("writer/unix.Close: %v", err)
+		return fmt.Errorf("writer/usock.Close: %v", err)
 	}
 	return nil
 }
@@ -43,5 +43,5 @@ func (this *Writer) Write(bs []byte, _ *iface.Record) error {
 }
 
 func openError(err error) error {
-	return fmt.Errorf("writer/unix.Open: %v", err)
+	return fmt.Errorf("writer/usock.Open: %v", err)
 }

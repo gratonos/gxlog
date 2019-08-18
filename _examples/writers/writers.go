@@ -11,14 +11,14 @@ import (
 	"github.com/gratonos/gxlog/writer"
 	"github.com/gratonos/gxlog/writer/file"
 	"github.com/gratonos/gxlog/writer/syslog"
-	"github.com/gratonos/gxlog/writer/unix"
+	"github.com/gratonos/gxlog/writer/usock"
 )
 
 var log = gxlog.Logger()
 
 func main() {
 	testWrappers()
-	testUnixWriter()
+	testUSockWriter()
 
 	gxlog.Formatter().SetColoring(false)
 
@@ -39,9 +39,9 @@ func testWrappers() {
 	log.Info("writer wrapper of os.Stderr")
 }
 
-func testUnixWriter() {
+func testUSockWriter() {
 	// Shell expansion is NOT supported. Thus, ~, $var and so on will NOT be expanded.
-	writer, err := unix.Open("/tmp/gxlog/unixdomain")
+	writer, err := usock.Open("/tmp/gxlog/usock")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -50,7 +50,7 @@ func testUnixWriter() {
 
 	log.SetSlotWriter(logger.Slot0, writer)
 
-	// Use "netcat -U /tmp/gxlog/unixdomain" to watch logs.
+	// Use "netcat -U /tmp/gxlog/usock" to watch logs.
 	// for i := 0; i < 1024; i++ {
 	// 	log.Info(i)
 	// 	time.Sleep(time.Second)
