@@ -32,11 +32,11 @@ func testDynamicContext() {
 	// ATTENTION: You SHOULD be very careful about concurrency safety or deadlocks
 	// with dynamic contexts.
 	n := 0
-	fn := logger.Dynamic(func() interface{} {
+	var fn logger.Dynamic = func() interface{} {
 		// Do NOT call any method of the Logger in the function, or it may deadlock.
 		n++
 		return n
-	})
+	}
 	clog := log.WithStatics("static", n).WithDynamics("dynamic", fn)
 	clog.Info("dynamic one")
 	clog.Info("dynamic two")

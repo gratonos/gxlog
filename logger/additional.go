@@ -69,6 +69,7 @@ func cloneStatics(statics []iface.Context, delta int) []iface.Context {
 }
 
 func appendStatics(statics []iface.Context, kvs []interface{}) []iface.Context {
+	// len(kvs) is even, checked by func keyValuePairs
 	for len(kvs) > 0 {
 		statics = append(statics, iface.Context{
 			Key:   fmt.Sprint(kvs[0]),
@@ -86,10 +87,13 @@ func cloneDynamics(dynamics []dynamicContext, delta int) []dynamicContext {
 }
 
 func appendDynamics(dynamics []dynamicContext, kvs []interface{}) []dynamicContext {
+	// len(kvs) is even, checked by func keyValuePairs
 	for len(kvs) > 0 {
 		dynamic, ok := kvs[1].(Dynamic)
-		if !ok || dynamic == nil {
-			panic("gxlog: invalid dynamic value")
+		if !ok {
+			panic("gxlog: dynamic value must be type Dynamic")
+		} else if dynamic == nil {
+			panic("gxlog: dynamic value must not be nil")
 		}
 		dynamics = append(dynamics, dynamicContext{
 			Key:   fmt.Sprint(kvs[0]),
