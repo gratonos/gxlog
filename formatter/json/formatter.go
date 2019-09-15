@@ -37,6 +37,10 @@ func (this *Formatter) Format(record *iface.Record) []byte {
 	buf = formatStrField(buf, "", "Time", record.Time.Format(time.RFC3339Nano), false)
 	buf = formatIntField(buf, ",", "Level", int(record.Level))
 	file := util.LastSegments(record.File, this.fileSegs, '/')
+	// avoid to omit the root path '/'
+	if len(file)+1 == len(record.File) {
+		file = record.File
+	}
 	buf = formatStrField(buf, ",", "File", file, true)
 	buf = formatIntField(buf, ",", "Line", record.Line)
 	pkg := util.LastSegments(record.Pkg, this.pkgSegs, '/')
