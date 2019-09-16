@@ -1,11 +1,11 @@
 package logger_test
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"testing"
 
@@ -47,7 +47,7 @@ func TestConcurrency(t *testing.T) {
 
 		go func(id int) {
 			log := log.WithStatics("id", id)
-			msg := string(bytes.Repeat([]byte(strconv.Itoa(id)), msgLen))
+			msg := strings.Repeat(strconv.Itoa(id), msgLen)
 
 			for n := 0; n < logCount; n++ {
 				log.Info(msg)
@@ -87,7 +87,7 @@ func newChecker() externalChecker {
 		id := log[indexes[2]:indexes[3]]
 		msg := log[indexes[4]:indexes[5]]
 
-		if string(bytes.Repeat([]byte(id), msgLen)) != msg {
+		if strings.Repeat(id, msgLen) != msg {
 			return errors.New("msg corrupted")
 		}
 		return nil
