@@ -23,10 +23,10 @@ const (
 )
 
 const (
-	dateRegexp     = "[0-9]{4}-[0-9]{2}-[0-9]{2}"          // e.g. 2019-09-15
-	timeRegexp     = "[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{6}" // e.g. 11:05:33.722028
-	contextsRegexp = "\\[\\(id: ([0-9])\\)\\]"             // e.g. [(id: 1)]
-	msgRegexp      = "([0-9]+)"                            // e.g. 1111...1
+	dateRegexp     = `\d{4}-\d{2}-\d{2}`       // e.g. 2019-09-15
+	timeRegexp     = `\d{2}:\d{2}:\d{2}.\d{6}` // e.g. 11:05:33.722028
+	contextsRegexp = `\[\(id: (\d)\)\]`        // e.g. [(id: 1)]
+	msgRegexp      = `(\d+)`                   // e.g. 1111...1
 )
 
 var logRegexp *regexp.Regexp
